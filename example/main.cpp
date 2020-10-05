@@ -14,7 +14,7 @@ int main () {
     std::array<double, 3> p {4, 5, 6};
 
     // Give desired position with velocity target and max acceleration.
-    // The 4yh parameter is user specified exit velocity (set 0 when motion should stop)
+    // The 4th parameter is user specified exit velocity (set 0 when motion should stop)
     // or do not enter to let the planner calculate exit velocity.
     motion.set_position(p, 100, 500, 0);
 
