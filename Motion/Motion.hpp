@@ -34,16 +34,22 @@ template <typename T, size_t N>
 class Motion : public MotionPlanner<T, N> {
 public:
     Motion(int hz) : MotionPlanner<T, N>(hz) { }
+    virtual ~Motion() {}
 
     MotionObject<T, N> current_motion;  
+
     int motion_pos = 0;
 
-    void set_position(std::array<T, N>& pos, T vel, T acc) {
+    inline void set_position(std::array<T, N>& pos, T vel, T acc) {
         Point<T, N> p(pos, vel, acc);
         this->do_command(p);
     }
 
-    std::array<T, N> get_next_velocity_setpoint() {
+    virtual inline void increment_motion_sample() {
+        motion_pos++;
+    }
+
+    virtual std::array<T, N> get_velocity_setpoint() {
         std::array<T, N> velocities;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
@@ -53,8 +59,21 @@ public:
 
         for (size_t i = 0; i < N; i++)
             velocities[i] = current_motion.get_velocity(motion_pos, i);
-        motion_pos++;
 
         return velocities;
+    }
+
+    virtual std::array<T, N> get_position_setpoint() {
+        std::array<T, N> positions;
+
+        if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
+            current_motion = this->get_motion();
+            motion_pos = 0;
+        }  
+
+        for (size_t i = 0; i < N; i++)
+            positions[i] = current_motion.get_position(motion_pos, i);
+
+        return positions;
     }
 };

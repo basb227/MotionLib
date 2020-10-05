@@ -28,7 +28,8 @@
  *
  */
 
-#include <math.h>
+#include <cmath>
+#include <array>
 
 #include "Defenitions.hpp"
 
@@ -38,6 +39,8 @@
 
 template <typename T, size_t N>
 struct Utils{
+    virtual ~Utils() {}
+    
     T dot(std::array<T, N> a, std::array<T, N> b) {
         T result = 0;
 

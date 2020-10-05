@@ -67,6 +67,8 @@ struct Polynomial {
 
         T v_v = (v_h - v_l) * 0.5;
 
+        v_0 = v_s;
+
         c_3 = 2. * (32. * (v_v - v_s) - 11. * (v_f - v_s)) / (t * t * t);
         c_4 = -3. * (64. * (v_v - v_s) - 27. * (v_f - v_s)) / (t * t * t * t);
         c_5 = 3. * (64. * (v_v - v_s) - 30. * (v_f - v_s)) / (t * t * t * t * t);

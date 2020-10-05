@@ -91,6 +91,10 @@ struct MotionObject : public Polynomial<T> {
         return (this->polynomial_v(dt * _n) * unit[i]);
     }
 
+    T get_position(int _n, int i) {
+        return (this->polynomial_p(dt * _n) * unit[i]);
+    }
+
     void operator = (MotionObject<T, N> m) {
         is_coast = m.is_coast;
         unit = m.unit;
@@ -102,5 +106,6 @@ struct MotionObject : public Polynomial<T> {
         this->c_4 = m.c_4;
         this->c_5 = m.c_5;
         this->c_6 = m.c_6;
+        this->v_0 = m.v_0;
     }
 };

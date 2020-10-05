@@ -35,7 +35,6 @@ template <typename T, size_t N>
 class MotionHandler{
 public:
     MotionHandler () {}
-
     virtual ~MotionHandler() {}
 
     void append_motion (MotionObject<T, N>& m) {
