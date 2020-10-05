@@ -81,6 +81,7 @@ The motion planner has a dimensionless setup, meaning that the inputs and result
 ## TODO
 - Implement jerk constraints.
 - STL independent for embedded applications (unique branch).
-- Kinematics for advanced use-cases.
+- Kinematics for advanced use-cases (e.g. UR5, Spot, ).
 - Implement relative positioning.
 - Add user defined final velocity condition.
+- Implement orientation (euler/orientation).
