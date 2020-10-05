@@ -46,10 +46,16 @@ public:
 
     virtual ~MotionPlanner(){};
 
-    void do_command(const Point<T, N>& p){
+    void plan(const Point<T, N>& p){
         // First append required to fill buffer.
         append_buffer(p);
         plan_motion();
+    }
+
+    void plan(const Point<T, N>& p, T& v_final){
+        // First append required to fill buffer.
+        append_buffer(p);
+        plan_motion(v_final);
     }
 
 private:
@@ -85,8 +91,51 @@ private:
         }
 
         T ratio {this->angle_ratio(mp_buffer[0], mp_buffer[1], mp_buffer[2])};
-            
+
         T v_exit {mp_buffer[1].vel * ratio};           // Velocity at end of trajectory (or final velocity).
+        T v_target {mp_buffer[1].vel};
+        T a_target {mp_buffer[1].acc};
+        
+        T v_delta {v_exit - v_enter}; 
+        T v_delta_target {v_target - v_enter};      // Delta velocity for acceleration phase.
+        T v_delta_exit {v_exit - v_target};         // Delta velocity for deceleration phase.
+        
+        // Calculate the time and distance required to reach target velocities.
+        T t_acc {this->calc_accel_time (v_delta_target, a_target)};
+        T p_acc {this->calc_accel_position (v_enter, v_target, t_acc)};
+
+        T t_dec {this->calc_accel_time (v_delta_exit, a_target)};
+        T p_dec {abs(this->calc_accel_position (v_target, v_exit, t_dec))};
+
+        // Determine if the first and second acceleration event in the motion is bigger than the total distance.
+        // If its true, coasting motion is calculated, if false, transition motion id calculated.
+        if ((carthesian_delta < 1) or ((p_acc + p_dec) > carthesian_delta))
+            transition(carthesian_delta, v_enter, v_target, v_delta, a_target, delta_unit, v_exit);
+        
+        else 
+            motion(v_enter, v_target, v_exit, carthesian_delta, p_acc, p_dec, t_acc, t_dec, delta_unit);
+
+        v_enter = v_exit;
+    }  
+
+    void plan_motion(T& v_final){
+        // Calculate delta's of axis.
+        auto delta_unit {this->unit_vector(mp_buffer[1] - mp_buffer[0])};
+        auto carthesian_delta {this->norm(mp_buffer[1] - mp_buffer[0])};
+
+        // Check for second motion entry.
+        if (carthesian_delta == 0.0) {
+            append_buffer(mp_buffer[2]);
+            delta_unit = this->unit_vector(mp_buffer[1] - mp_buffer[0]);
+            carthesian_delta = this->norm(mp_buffer[1] - mp_buffer[0]);
+            // If delta is 0, nothing to calculate.
+            if (carthesian_delta == 0.0)
+                return;
+        }
+
+        T ratio {this->angle_ratio(mp_buffer[0], mp_buffer[1], mp_buffer[2])};
+
+        T v_exit {v_final};
         T v_target {mp_buffer[1].vel};
         T a_target {mp_buffer[1].acc};
         

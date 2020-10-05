@@ -42,7 +42,12 @@ public:
 
     inline void set_position(std::array<T, N>& pos, T vel, T acc) {
         Point<T, N> p(pos, vel, acc);
-        this->do_command(p);
+        this->plan(p);
+    }
+
+    inline void set_position(std::array<T, N>& pos, T vel, T acc, T v_final) {
+        Point<T, N> p(pos, vel, acc);
+        this->plan(p, v_final);
     }
 
     virtual inline void increment_motion_sample() {
