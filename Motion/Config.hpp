@@ -31,5 +31,5 @@
 #define CORNER_MAX_RATIO            0.01    // Ratio used to determine exit velocity (v_exit = v_target * CORNER_MAX_RATIO).
 #define CORNER_VELOCITY_RATIO       5       // Square factor to determine the ratio (High ratio == slower exit speeds, low ratio == faster exit speeds).
 
-#define STANDARD_FEEDRATE           7200 / 60       // [mm/s]
-#define STANDARD_ACCELERATION       2000            // [mm/s^2]
+#define STANDARD_VELOCITY           1000       
+#define STANDARD_ACCELERATION       2000       

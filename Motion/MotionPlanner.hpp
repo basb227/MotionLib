@@ -54,7 +54,7 @@ public:
 
 private:
     MotionObject<T, N> current_motion;
-    std::array<Point<T, N>, 3> mp_buffer;    // Motion buffer containing three appended Gcode motions (G0, G1).
+    std::array<Point<T, N>, 3> mp_buffer;    // Motion buffer containing three appended motions (G0, G1).
     std::array<T, N> unit_prev;
 
     const int hz;
