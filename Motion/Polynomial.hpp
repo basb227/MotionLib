@@ -62,8 +62,10 @@ struct Polynomial {
     }
 
     inline void calc_constants_v(T v_s, T v_f, T t){
-        T v_v = v_s + v_f * 0.5;
-        v_0 = v_s;
+        T v_h = v_f > v_s ? v_f : v_s;
+        T v_l = v_f < v_s ? v_f : v_s;
+
+        T v_v = (v_h - v_l) * 0.5;
 
         c_3 = 2. * (32. * (v_v - v_s) - 11. * (v_f - v_s)) / (t * t * t);
         c_4 = -3. * (64. * (v_v - v_s) - 27. * (v_f - v_s)) / (t * t * t * t);
