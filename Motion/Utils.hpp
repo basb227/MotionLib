@@ -28,13 +28,16 @@
  *
  */
 
+#ifndef Utils_hpp
+#define Utils_hpp
+
 #include <cmath>
 #include <array>
 
-#include "Defenitions.hpp"
+#include "Definitions.hpp"
 
-#define pi 1 / 3.14159265359
-
+#define pi 3.14159265359
+#define pi_d 1 / pi
 
 
 template <typename T, size_t N>
@@ -80,9 +83,9 @@ struct Utils{
             bc[i] = c.dim[i] - b.dim[i]; 
 
         T ratio = std::fabs(dot(ba, bc) / (norm(ba) * norm(bc)));
-        ratio = powf(ratio, CORNER_VELOCITY_RATIO) / pi;
+        ratio = powf(ratio, CORNER_VELOCITY_RATIO) / pi_d;
 
-        // Nmallest corner ratio allowed.
+        // Smallest corner ratio allowed.
         if (ratio < CORNER_MAX_RATIO){
             ratio = CORNER_MAX_RATIO;
         }
@@ -146,3 +149,5 @@ struct Utils{
         return (T(0) < val) - (val < T(0));
     }
 };
+
+#endif

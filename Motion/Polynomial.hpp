@@ -28,6 +28,9 @@
  *
  */
 
+#ifndef Polynomial_hpp
+#define Polynomial_hpp
+
 #include <math.h>
 
 template <typename T>
@@ -99,3 +102,5 @@ struct Polynomial {
         return (t * t) * (t * (6. * c_6 * (t * t) + 5. * c_5 * t + 4 * c_4) + 3. * c_3);
     };   
 };
+
+#endif

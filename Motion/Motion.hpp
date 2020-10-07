@@ -28,24 +28,28 @@
  *
  */
 
+#ifndef Motion_hpp
+#define Motion_hpp
+
 #include "MotionPlanner.hpp"
 
 template <typename T, size_t N>
-class Motion : public MotionPlanner<T, N> {
+class Motion : private MotionPlanner<T, N> {
 public:
-    Motion(int hz) : MotionPlanner<T, N>(hz) { }
+    Motion(int hz) : MotionPlanner<T, N>(hz) {}
     virtual ~Motion() {}
 
-    MotionObject<T, N> current_motion;  
+    inline void plan_motion(std::array<T, N> pos) {
+        Point<T, N> p(pos);
+        this->plan(p);
+    }
 
-    int motion_pos = 0;
-
-    inline void set_position(std::array<T, N>& pos, T vel, T acc) {
+    inline void plan_motion(std::array<T, N> pos, T vel, T acc) {
         Point<T, N> p(pos, vel, acc);
         this->plan(p);
     }
 
-    inline void set_position(std::array<T, N>& pos, T vel, T acc, T v_final) {
+    inline void plan_motion(std::array<T, N> pos, T vel, T acc, T v_final) {
         Point<T, N> p(pos, vel, acc);
         this->plan(p, v_final);
     }
@@ -69,7 +73,7 @@ public:
     }
 
     virtual std::array<T, N> get_position_setpoint() {
-        std::array<T, N> positions;
+        std::array<T, N> velocities;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
             current_motion = this->get_motion();
@@ -77,8 +81,16 @@ public:
         }  
 
         for (size_t i = 0; i < N; i++)
-            positions[i] = current_motion.get_position(motion_pos, i);
+            velocities[i] = current_motion.get_position(motion_pos, i);
 
-        return positions;
+        return velocities;
     }
+
+private:
+    MotionObject<T, N> current_motion;
+
+    int motion_pos = 0;
+
 };
+
+#endif

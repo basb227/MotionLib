@@ -28,6 +28,9 @@
  *
  */
 
+#ifndef MotionHandler_hpp
+#define MotionHandler_hpp
+
 #include "Utils.hpp"
 #include <queue>
 
@@ -58,3 +61,5 @@ public:
 private:
     std::queue<MotionObject<T, N>> motion_queue;
 };
+
+#endif

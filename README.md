@@ -90,5 +90,5 @@ The motion planner has a dimensionless setup, meaning that the inputs and result
 - STL independent for embedded applications (unique branch).
 - Kinematics for advanced use-cases (e.g. UR5, Spot, Braccio).
 - Implement relative positioning.
-- Add user defined final velocity condition.
+- ✔ Add user defined final velocity condition.
 - Implement orientation (euler/orientation).

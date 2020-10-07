@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.                                                                         
  * 
- * @file Defenitions.hpp
+ * @file Definitions.hpp
  *
  * @brief Definitions hold objects used to define motions and points.
  *
@@ -27,6 +27,9 @@
  * Contact: b.brussen@outlook.com
  *
  */
+
+#ifndef Definitions_hpp
+#define Definitions_hpp
 
 #include <utility>
 
@@ -45,6 +48,9 @@ struct Point {
 
     Point(T f, T a) : 
     vel(f), acc(a) {dim.fill(0.);}
+
+    Point(std::array<T, N> dim) : 
+    dim(dim), vel(STANDARD_VELOCITY), acc(STANDARD_ACCELERATION) {}
     
     Point(std::array<T, N> dim, T f, T a) : 
     dim(dim), vel(f), acc(a) {}
@@ -52,9 +58,8 @@ struct Point {
     virtual std::array<T, N> operator- (Point<T, N>& p) {
         std::array<T, N> result;
 
-        for (size_t i = 0 ; i < N ; i++) {
+        for (size_t i = 0 ; i < N ; i++) 
             result[i] = this->dim[i] - p.dim[i];
-        }
         
         return result;
     }
@@ -109,3 +114,5 @@ struct MotionObject : public Polynomial<T> {
         this->v_0 = m.v_0;
     }
 };
+
+#endif
