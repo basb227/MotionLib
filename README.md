@@ -84,11 +84,3 @@ motion.set_position(p, 50, 500);
 Under Motion/Config.hpp some macros are defined which can be used to change the motion behavior.
 
 The motion planner has a dimensionless setup, meaning that the inputs and resulting trajectories do not hold a context by definition (like [mm/s] or [rad/s]). The user of this library can define what the proper units would be based on the context of the application.
-
-## TODO
-- Implement jerk constraints.
-- STL independent for embedded applications (unique branch).
-- Kinematics for advanced use-cases (e.g. UR5, Spot, Braccio).
-- Implement relative positioning.
-- ✔ Add user defined final velocity condition.
-- Implement orientation (euler/orientation).
