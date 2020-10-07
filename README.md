@@ -65,19 +65,49 @@ After the ratio is determined with its exit velocities, the planner will determi
 
 The image below demonstrates the acceleration, coasting and deceleration of the motion.
 ```C++
-// 1 dimensional position is 5.
-std::array<double, 1> p {5};
-// Max velocity is 50, max accel is 2000.
-motion.set_position(p, 50, 2000);
-```
-![Result](img/coast.png)
+#include <iostream>
 
-The second case requires some extra calculations to determine the correct acceleration and velocity to reach the specified position. The maximum velocity and acceleration are only constraints, not specifications which have to be met. The only specification is the position. The image below demonstrates a transitional motion where the velocity does not reach its maximum.
-```C++
-// 1 dimensional position is 5.
-std::array<double, 1> p {5};
-// Max velocity is 50, max accel is 500.
-motion.set_position(p, 50, 500);
+// Only include Motion.hpp
+#include "../Motion/Motion.hpp"
+
+int main () {
+    // Class Motion takes two template arguments: first is type (float, double, int etc.), 
+    // second is number of dimensions.
+    // The object takes one argument: hz, which is the amount of samples created per second (or resolution).
+    Motion<double, 6> motion(1000);
+
+    // set_position takes array which represents desired position.
+    // Positions are always absolute.
+    std::array<double, 6> p {1, 2, 3, 4, 5, 6};
+
+    // Orientation and position are given in three dimensions.
+    // The motion class will calculate for the 6 dimensions.
+
+
+    // Plan the motion. The paramters are velocity acceleration and final velocity respectively.
+    motion.plan_motion(p, 500, 2000, 0);
+
+    std::cout << "roll, pitch, yaw, x, y, z" << "\n";
+
+    for (int i = 0; i < 935; i++) {
+        // Get velocity setpoints of current time sample.
+        auto result = motion.get_velocity_setpoint();
+
+        // Increment motion.
+        motion.increment_motion_sample();
+
+
+        std::cout   << result[0] << ", " 
+                    << result[1] << ", " 
+                    << result[2] << ", "
+                    << result[3] << ", " 
+                    << result[4] << ", " 
+                    << result[5] << "\n";
+                    
+    }
+    
+    return 0;
+}
 ```
 ![Result](img/transition.png)
 
