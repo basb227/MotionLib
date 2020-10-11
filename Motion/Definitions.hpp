@@ -34,34 +34,37 @@
 #include <utility>
 
 #include "Polynomial.hpp"
-#include "Config.hpp"
+#include "Utils.hpp"
+
 
 /**
  * Defines a carthesian point.
  */
 template <typename T, size_t N>
 struct Point {
-    std::array<T, N> dim;
+    std::array<T, N> dim {};
     T vel, acc;
     
-    Point() : vel(0), acc(0) {dim.fill(0.);}
+    Point() : 
+        vel(0), 
+        acc(0) {}
 
     Point(T f, T a) : 
-    vel(f), acc(a) {dim.fill(0.);}
+        vel(f), 
+        acc(a) {}
 
     Point(std::array<T, N> dim) : 
-    dim(dim), vel(STANDARD_VELOCITY), acc(STANDARD_ACCELERATION) {}
+        dim(dim), 
+        vel(STANDARD_VELOCITY), 
+        acc(STANDARD_ACCELERATION) {}
     
     Point(std::array<T, N> dim, T f, T a) : 
-    dim(dim), vel(f), acc(a) {}
+        dim(dim), 
+        vel(f), 
+        acc(a) {}
 
-    virtual std::array<T, N> operator- (Point<T, N>& p) {
-        std::array<T, N> result;
-
-        for (size_t i = 0 ; i < N ; i++) 
-            result[i] = this->dim[i] - p.dim[i];
-        
-        return result;
+    std::array<T, N> operator- (Point<T, N>& p) {
+        return ml::min(this->dim, p.dim);
     }
 };
 
@@ -71,7 +74,8 @@ struct Point {
  */
 template <typename T, size_t N>
 struct MotionObject : public Polynomial<T> {
-    std::array<T, N> unit;
+    std::array<T, N> unit {};
+    T p_prev {};
     bool is_coast {false};
 
     T v_target {0.0};
@@ -79,12 +83,11 @@ struct MotionObject : public Polynomial<T> {
 
     int n {0};
 
-    MotionObject() {unit.fill(0);}
+    MotionObject() {}
     virtual ~MotionObject() {}
 
     void reset(){
         is_coast = false;
-        unit.fill(0.0);
         v_target = 0.0;
         dt = 0.0;
         n = 0;
@@ -100,18 +103,20 @@ struct MotionObject : public Polynomial<T> {
         return (this->polynomial_p(dt * _n) * unit[i]);
     }
 
-    void operator = (MotionObject<T, N> m) {
+    void operator= (MotionObject<T, N> m) {
         is_coast = m.is_coast;
         unit = m.unit;
         v_target = m.v_target;
         dt = m.dt;
         n = m.n;
+        p_prev = m.p_prev;
 
         this->c_3 = m.c_3;
         this->c_4 = m.c_4;
         this->c_5 = m.c_5;
         this->c_6 = m.c_6;
         this->v_0 = m.v_0;
+        this->p_0 = m.p_prev;
     }
 };
 

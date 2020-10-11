@@ -32,9 +32,9 @@
 #define Utils_hpp
 
 #include <cmath>
-#include <array>
 
-#include "Definitions.hpp"
+#include "Config.hpp"
+#include "ArrayMath.hpp"
 
 #define pi 3.14159265359
 #define pi_d 1 / pi
@@ -45,44 +45,19 @@ struct Utils{
     virtual ~Utils() {}
     
     T dot(std::array<T, N> a, std::array<T, N> b) {
-        T result = 0;
-
-        for (size_t i = 0; i < N; i++)
-            result += (a[i] * b[i]);
-
-        return result;
+        return ml::accum(ml::mul(a, b));
     }
 
     T norm(std::array<T, N> a) { 
-        T sum = 0.0; 
-
-        for (size_t i = 0; i < N; i++)
-            sum += (a[i] * a[i]); 
-
-        return powl(sum, 0.5); 
+        return powl(ml::accum(ml::mul(a, a)), 0.5); 
     } 
 
-    T norm(Point<T, N> p) { 
-        T sum = 0; 
-
-        for (size_t i = 0; i < N; i++)
-            sum += (p.dim[i] * p.dim[i]);  
-
-        return powl(sum, 0.5); 
-    } 
-
-    T angle_ratio(Point<T, N>& a, Point<T, N>& b, Point<T, N>& c) {
+    T angle_ratio(std::array<T, N>& a, std::array<T, N>& b, std::array<T, N>& c) {
         // Calculate the delta's between b-a and b-c
-        std::array<T, N> ba;
-        std::array<T, N> bc;
+        std::array<T, N> ab {ml::min(a, b)};
+        std::array<T, N> cb {ml::min(c, b)};
 
-        for (size_t i = 0; i < N; i++)
-            ba[i] = a.dim[i] - b.dim[i]; 
-        
-        for (size_t i = 0; i < N; i++)
-            bc[i] = c.dim[i] - b.dim[i]; 
-
-        T ratio = std::fabs(dot(ba, bc) / (norm(ba) * norm(bc)));
+        T ratio = std::fabs(dot(ab, cb) / (norm(ab) * norm(cb)));
         ratio = powf(ratio, CORNER_VELOCITY_RATIO) / pi_d;
 
         // Smallest corner ratio allowed.
@@ -97,43 +72,15 @@ struct Utils{
     }
 
     inline std::array<T, N> delta_array (std::array<T, N>& a, std::array<T, N>& b) {
-        std::array<T, N> result;
-
-        for (size_t i = 0; i < N; i++)
-            result[i] = a[i] - b[i];
-
-        return result;
+        return ml::min(a, b);
     }
 
     inline std::array<T, N> multiply_array (std::array<T, N>& a, T& b) {
-        std::array<T, N> result;
-
-        for (size_t i = 0; i < N; i++)
-            result[i] = a[i] * b;
-
-        return result;
+        return ml::mul(a, b);
     }
 
     inline std::array<T, N> unit_vector(std::array<T, N> vec){
-        std::array<T, N> result;
-
-        T normal = norm(vec);
-
-        for (size_t i = 0; i < N; i++)
-            result[i] = vec[i] / normal;
-
-        return result;
-    }
-
-    std::array<T, N> unit_vector(Point<T, N>& p){
-        std::array<T, N> result;
-
-        T normal = norm(p);
-
-        for (size_t i = 0; i < N; i++)
-            result[i] = p.dim[i] / normal;
-
-        return result;
+        return ml::div(vec, norm(vec));
     }
 
     T integrate(T v_begin, T v, T v_prev, T dt){
@@ -149,5 +96,6 @@ struct Utils{
         return (T(0) < val) - (val < T(0));
     }
 };
+
 
 #endif

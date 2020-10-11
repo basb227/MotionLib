@@ -34,9 +34,17 @@
 #include "MotionPlanner.hpp"
 
 template <typename T, size_t N>
-class Motion : private MotionPlanner<T, N> {
+class Motion : public MotionPlanner<T, N> {
 public:
-    Motion(int hz) : MotionPlanner<T, N>(hz) {}
+    Motion() : MotionPlanner<T, N>(0) {}
+
+    Motion(int hz) : 
+        MotionPlanner<T, N>(hz) {}
+
+    Motion(int hz, std::array<T, N> p) : 
+        MotionPlanner<T, N>(hz, p),
+        p_init(p) { }   
+
     virtual ~Motion() {}
 
     inline void plan_motion(std::array<T, N> pos) {
@@ -73,7 +81,7 @@ public:
     }
 
     virtual std::array<T, N> get_position_setpoint() {
-        std::array<T, N> velocities;
+        std::array<T, N> positions;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
             current_motion = this->get_motion();
@@ -81,14 +89,24 @@ public:
         }  
 
         for (size_t i = 0; i < N; i++)
-            velocities[i] = current_motion.get_position(motion_pos, i);
+            positions[i] = current_motion.get_position(motion_pos, i) + p_init[i];
 
-        return velocities;
+        return positions;
+    }
+
+    Motion<T, N>& operator= (Motion<T, N>&& mp) {
+        this->hz = mp.hz;
+        this->dt = mp.dt;
+        return *this;
+    }
+
+    void set_hz(int hz) {
+        this->hz = hz;
     }
 
 private:
     MotionObject<T, N> current_motion;
-
+    std::array<T, N> p_init;
     int motion_pos = 0;
 
 };

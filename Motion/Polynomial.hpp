@@ -31,7 +31,8 @@
 #ifndef Polynomial_hpp
 #define Polynomial_hpp
 
-#include <math.h>
+#include <cmath>
+
 
 template <typename T>
 struct Polynomial {
@@ -42,9 +43,10 @@ struct Polynomial {
     T c_5;
     T c_6;
     T v_0;
+    T p_0;
     
     Polynomial() : 
-    c_3(1.), c_4(1.), c_5(1.), c_6(1.), v_0(0.) {}
+    c_3(1.), c_4(1.), c_5(1.), c_6(1.), v_0(0.), p_0(0.) {}
 
     ~Polynomial(){}
 
@@ -91,7 +93,7 @@ struct Polynomial {
         return  pol_p_c * t * (105 * c_3 * (t * t * t) + 
                 2 * (42 * c_4 * (t * t * t * t) + 
                 5 * (6 * (c_6 * (t * t * t* t * t * t) + 7 * v_0) + 
-                7 * c_5 * (t * t * t* t * t))));
+                7 * c_5 * (t * t * t* t * t)))) + p_0;
     } 
 
     inline T polynomial_v(T t){
@@ -100,7 +102,7 @@ struct Polynomial {
 
     inline T polynomial_a(T t){
         return (t * t) * (t * (6. * c_6 * (t * t) + 5. * c_5 * t + 4 * c_4) + 3. * c_3);
-    };   
+    }
 };
 
 #endif

@@ -31,16 +31,19 @@
 #ifndef MotionHandler_hpp
 #define MotionHandler_hpp
 
-#include "Utils.hpp"
+#include "Definitions.hpp"
 #include <queue>
 
 template <typename T, size_t N>
 class MotionHandler{
 public:
-    MotionHandler () {}
+    MotionHandler () :
+        motion_length(0) {}
+
     virtual ~MotionHandler() {}
 
     void append_motion (MotionObject<T, N>& m) {
+        motion_length += (m.n + 1);
         motion_queue.push(m);
     }
 
@@ -49,14 +52,17 @@ public:
     }
 
     MotionObject<T, N> get_motion () {
-        if (motion_queue.size() > 0){
+        if (motion_queue.size() > 0) {
             MotionObject<T, N> move = std::move(motion_queue.front());
             motion_queue.pop();
+            motion_length -= (move.n + 1);
             return move;
         }
 
         return MotionObject<T, N>();
     }
+
+    int motion_length;
 
 private:
     std::queue<MotionObject<T, N>> motion_queue;

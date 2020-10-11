@@ -28,21 +28,34 @@
  *
  */
 
-#include <math.h>
-
 #include "MotionHandler.hpp"
 
 template <typename T, size_t N>
 class MotionPlanner : public MotionHandler<T, N>, public Utils<T, N> {
 public:
-    MotionPlanner(const int hz) : hz(hz), dt(1./hz) {
-        unit_prev.fill(0);
+    int hz;
+    T dt;
 
-        Point<T, N> p(STANDARD_VELOCITY, STANDARD_ACCELERATION);
-        append_buffer(p);
-        append_buffer(p);
-        append_buffer(p);
-    }
+    MotionPlanner(const int hz) : 
+        hz(hz), 
+        dt(1./hz) {
+            Point<T, N> p(STANDARD_VELOCITY, STANDARD_ACCELERATION);
+
+            append_buffer(p);
+            append_buffer(p);
+            append_buffer(p);
+        }
+
+    MotionPlanner(const int hz, std::array<T, N>& point) : 
+        hz(hz), 
+        dt(1./hz) ,
+        p_init(point) {
+            Point<T, N> p(STANDARD_VELOCITY, STANDARD_ACCELERATION);
+
+            append_buffer(point);
+            append_buffer(point);
+            append_buffer(point);
+        }
 
     virtual ~MotionPlanner(){};
 
@@ -61,10 +74,7 @@ public:
 private:
     MotionObject<T, N> current_motion;
     std::array<Point<T, N>, 3> mp_buffer;    // Motion buffer containing three appended motions (G0, G1).
-    std::array<T, N> unit_prev;
-
-    const int hz;
-    const T dt;
+    std::array<T, N> p_init;
 
     T v_enter {0.0};
     T delta_p {0.0};
@@ -77,21 +87,23 @@ private:
 
     void plan_motion(){
         // Calculate delta's of axis.
-        auto delta_unit {this->unit_vector(mp_buffer[1] - mp_buffer[0])};
-        auto carthesian_delta {this->norm(mp_buffer[1] - mp_buffer[0])};
+        auto m = ml::min((mp_buffer[1] - mp_buffer[0]), p_init);
+        auto delta_unit {this->unit_vector(m)};
+        auto carthesian_delta {this->norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0.0) {
+        if (carthesian_delta == 0) {
             append_buffer(mp_buffer[2]);
-            delta_unit = this->unit_vector(mp_buffer[1] - mp_buffer[0]);
-            carthesian_delta = this->norm(mp_buffer[1] - mp_buffer[0]);
+            m = ml::min((mp_buffer[1] - mp_buffer[0]), p_init);
+            delta_unit = this->unit_vector(m);
+            carthesian_delta = this->norm(m);
             // If delta is 0, nothing to calculate.
             if (carthesian_delta == 0.0)
                 return;
         }
 
-        T ratio {this->angle_ratio(mp_buffer[0], mp_buffer[1], mp_buffer[2])};
-
+        T ratio {this->angle_ratio(mp_buffer[0].dim, mp_buffer[1].dim, mp_buffer[2].dim)};
+        
         T v_exit {mp_buffer[1].vel * ratio};           // Velocity at end of trajectory (or final velocity).
         T v_target {mp_buffer[1].vel};
         T a_target {mp_buffer[1].acc};
@@ -110,32 +122,34 @@ private:
         // Determine if the first and second acceleration event in the motion is bigger than the total distance.
         // If its true, coasting motion is calculated, if false, transition motion id calculated.
         if ((carthesian_delta < 1) or ((p_acc + p_dec) > carthesian_delta))
-            transition(carthesian_delta, v_enter, v_target, v_delta, a_target, delta_unit, v_exit);
+            transition(carthesian_delta, v_enter, v_target, v_delta, a_target, delta_unit, v_exit, t_acc, t_dec);
         
         else 
             motion(v_enter, v_target, v_exit, carthesian_delta, p_acc, p_dec, t_acc, t_dec, delta_unit);
 
         v_enter = v_exit;
     }  
-
+    
     void plan_motion(T& v_final){
         // Calculate delta's of axis.
-        auto delta_unit {this->unit_vector(mp_buffer[1] - mp_buffer[0])};
-        auto carthesian_delta {this->norm(mp_buffer[1] - mp_buffer[0])};
+        auto m =  ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
+        auto delta_unit {this->unit_vector(m)};
+        auto carthesian_delta {this->norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0.0) {
+        if (carthesian_delta == 0) {
             append_buffer(mp_buffer[2]);
-            delta_unit = this->unit_vector(mp_buffer[1] - mp_buffer[0]);
-            carthesian_delta = this->norm(mp_buffer[1] - mp_buffer[0]);
+            m = ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
+            delta_unit = this->unit_vector(m);
+            carthesian_delta = this->norm(m);
             // If delta is 0, nothing to calculate.
             if (carthesian_delta == 0.0)
                 return;
         }
 
-        T ratio {this->angle_ratio(mp_buffer[0], mp_buffer[1], mp_buffer[2])};
-
-        T v_exit {v_final};
+        T ratio {this->angle_ratio(mp_buffer[0].dim, mp_buffer[1].dim, mp_buffer[2].dim)};
+        
+        T v_exit {v_final};           // Velocity at end of trajectory (or final velocity).
         T v_target {mp_buffer[1].vel};
         T a_target {mp_buffer[1].acc};
         
@@ -153,7 +167,7 @@ private:
         // Determine if the first and second acceleration event in the motion is bigger than the total distance.
         // If its true, coasting motion is calculated, if false, transition motion id calculated.
         if ((carthesian_delta < 1) or ((p_acc + p_dec) > carthesian_delta))
-            transition(carthesian_delta, v_enter, v_target, v_delta, a_target, delta_unit, v_exit);
+            transition(carthesian_delta, v_enter, v_target, v_delta, a_target, delta_unit, v_exit, t_acc, t_dec);
         
         else 
             motion(v_enter, v_target, v_exit, carthesian_delta, p_acc, p_dec, t_acc, t_dec, delta_unit);
@@ -186,7 +200,7 @@ private:
         v_target *= (position / current_motion.polynomial_p(t));
     }
 
-    void transition (const T& p_delta, const T& v_enter, T v_target, const T& v_delta, const T& a_target, std::array<T, N>& delta_unit, T v_exit){
+    void transition (const T& p_delta, const T& v_enter, T v_target, const T& v_delta, const T& a_target, std::array<T, N>& delta_unit, T v_exit, T& t_acc, T& t_dec){
         T t {0};
         T p {0};
         T ratio {0};
@@ -210,10 +224,13 @@ private:
 
         delta_p = current_motion.polynomial_p(t) - (p_delta * 0.5);
 
+        T p_prev = current_motion.polynomial_p(t);
+
         update_motion (
             static_cast<int> (t * hz), 
             delta_unit, 
             v_target, 
+            {},
             false
         );
 
@@ -231,6 +248,7 @@ private:
             static_cast<int> (t * hz), 
             delta_unit, 
             v_target, 
+            p_prev,
             false
         );
     }
@@ -246,6 +264,7 @@ private:
             static_cast<int> (t_acc * this->hz),
             delta_unit,
             v_target,
+            {},
             false
         );
 
@@ -260,6 +279,7 @@ private:
             static_cast<int> (t * this->hz),
             delta_unit,
             v_target,
+            p_acc, 
             true
         );
 
@@ -270,16 +290,18 @@ private:
             static_cast<int> (t_dec * this->hz),
             delta_unit,
             v_target,
+            p_acc + p_coast,
             false
         );
     }
 
-    void update_motion (int n, const std::array<T, N>& unit_vec, T velocity, bool is_coast) {
+    void update_motion (int n, const std::array<T, N>& unit_vec, T velocity, T p_prev, bool is_coast) {
         current_motion.n = n;
         current_motion.dt = dt;
         current_motion.unit = unit_vec;
         current_motion.v_target = velocity;
         current_motion.is_coast = is_coast;
+        current_motion.p_prev = p_prev;
         
         this->append_motion(current_motion);
 
