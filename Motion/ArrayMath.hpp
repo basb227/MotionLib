@@ -40,8 +40,8 @@ namespace ml {
     }
 
     template<typename A, typename ... Args>
-    A add (A& a, Args ... args) {
-        auto arguments = {args...};
+    A add (A& a, Args&& ... args) {
+        const auto arguments = {args...};
         A result = a;
 
         std::for_each(arguments.begin(), arguments.end(), [&](auto& i){
@@ -52,8 +52,8 @@ namespace ml {
     }
 
     template<typename A, typename ... Args>
-    A min (A& a, Args ... args) {
-        auto arguments = {args...};
+    A min (A& a, Args&& ... args) {
+        const auto arguments = {args...};
         A result = a;
 
         std::for_each(arguments.begin(), arguments.end(), [&](auto& i){
@@ -64,8 +64,8 @@ namespace ml {
     }
 
     template<typename A, typename ... Args>
-    A mul (A& a, Args ... args) {
-        auto arguments = {args...};
+    A mul (A& a, Args&& ... args) {
+        const auto arguments = {args...};
         A result = a;
 
         std::for_each(arguments.begin(), arguments.end(), [&](auto& i){
@@ -76,8 +76,8 @@ namespace ml {
     }
 
     template<typename A, typename ... Args>
-    A div (A& a, Args ... args) {
-        auto arguments = {args...};
+    A div (A& a, Args&& ... args) {
+        const auto arguments = {args...};
         A result = a;
 
         std::for_each(arguments.begin(), arguments.end(), [&](auto& i){

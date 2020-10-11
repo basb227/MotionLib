@@ -89,7 +89,7 @@ public:
         }  
 
         for (size_t i = 0; i < N; i++)
-            positions[i] = current_motion.get_position(motion_pos, i) + p_init[i];
+            positions[i] = current_motion.get_position(motion_pos, i) + current_motion.p_prev[i];
 
         return positions;
     }

@@ -43,6 +43,7 @@
 template <typename T, size_t N>
 struct Point {
     std::array<T, N> dim {};
+    std::array<T, N> p_prev {};
     T vel, acc;
     
     Point() : 
@@ -66,6 +67,14 @@ struct Point {
     std::array<T, N> operator- (Point<T, N>& p) {
         return ml::min(this->dim, p.dim);
     }
+
+    Point<T, N>& operator= (Point<T, N> p) {
+        dim = p.dim;
+        vel = p.vel;
+        acc = p.acc;
+
+        return *this;
+    }
 };
 
 /**
@@ -75,7 +84,7 @@ struct Point {
 template <typename T, size_t N>
 struct MotionObject : public Polynomial<T> {
     std::array<T, N> unit {};
-    T p_prev {};
+    std::array<T, N> p_prev {};
     bool is_coast {false};
 
     T v_target {0.0};
@@ -116,7 +125,7 @@ struct MotionObject : public Polynomial<T> {
         this->c_5 = m.c_5;
         this->c_6 = m.c_6;
         this->v_0 = m.v_0;
-        this->p_0 = m.p_prev;
+        this->p_0 = m.p_0;
     }
 };
 

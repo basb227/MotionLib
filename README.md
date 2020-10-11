@@ -16,7 +16,7 @@ This small motion library can generate velocity and positional profiles based on
 The motivation of this library is that there are a few possible alternatives which involve a deeper understanding of mathematics. This library is user friendly and easy to implements.
 
 ## Example Implementation
-In this example a 3 dimensional Motion object is created. The planner gets a position of {4, 5, 6}. 
+In this example a 6 dimensional Motion object is created. The planner gets a position of {1, 2, 3, 4, 5, 6}. 
 
 ```C++
 #include <iostream>

@@ -28,6 +28,9 @@
  *
  */
 
+#ifndef MotionPlanner_hpp
+#define MotionPlanner_hpp
+
 #include "MotionHandler.hpp"
 
 template <typename T, size_t N>
@@ -48,10 +51,8 @@ public:
 
     MotionPlanner(const int hz, std::array<T, N>& point) : 
         hz(hz), 
-        dt(1./hz) ,
-        p_init(point) {
-            Point<T, N> p(STANDARD_VELOCITY, STANDARD_ACCELERATION);
-
+        dt(1./hz),
+        p_prev(point) {
             append_buffer(point);
             append_buffer(point);
             append_buffer(point);
@@ -73,8 +74,8 @@ public:
 
 private:
     MotionObject<T, N> current_motion;
-    std::array<Point<T, N>, 3> mp_buffer;    // Motion buffer containing three appended motions (G0, G1).
-    std::array<T, N> p_init;
+    std::array<Point<T, N>, 3> mp_buffer;    
+    std::array<T, N> p_prev {};
 
     T v_enter {0.0};
     T delta_p {0.0};
@@ -87,20 +88,13 @@ private:
 
     void plan_motion(){
         // Calculate delta's of axis.
-        auto m = ml::min((mp_buffer[1] - mp_buffer[0]), p_init);
+        auto m = ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
         auto delta_unit {this->unit_vector(m)};
         auto carthesian_delta {this->norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0) {
-            append_buffer(mp_buffer[2]);
-            m = ml::min((mp_buffer[1] - mp_buffer[0]), p_init);
-            delta_unit = this->unit_vector(m);
-            carthesian_delta = this->norm(m);
-            // If delta is 0, nothing to calculate.
-            if (carthesian_delta == 0.0)
-                return;
-        }
+        if (carthesian_delta == 0)
+            return;
 
         T ratio {this->angle_ratio(mp_buffer[0].dim, mp_buffer[1].dim, mp_buffer[2].dim)};
         
@@ -132,20 +126,14 @@ private:
     
     void plan_motion(T& v_final){
         // Calculate delta's of axis.
-        auto m =  ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
+        // Calculate delta's of axis.
+        auto m = ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
         auto delta_unit {this->unit_vector(m)};
         auto carthesian_delta {this->norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0) {
-            append_buffer(mp_buffer[2]);
-            m = ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
-            delta_unit = this->unit_vector(m);
-            carthesian_delta = this->norm(m);
-            // If delta is 0, nothing to calculate.
-            if (carthesian_delta == 0.0)
-                return;
-        }
+        if (carthesian_delta == 0)
+            return;
 
         T ratio {this->angle_ratio(mp_buffer[0].dim, mp_buffer[1].dim, mp_buffer[2].dim)};
         
@@ -205,13 +193,13 @@ private:
         T p {0};
         T ratio {0};
 
-        // Lambda to calculate the ratio between the intial motion constraint to 
-        // acceleratin and the required motion to reach the position specified.
+        // Lambda to calculate the ratio between the intial motion constraint for 
+        // acceleration and the required motion to reach the position specified.
         auto get_ratio = [&] (auto v_t, auto v_e) {
             t = calc_accel_time((v_t - v_e), a_target);
             current_motion.calc_constants_v(v_e, v_t, t);
             p = current_motion.polynomial_p(t);
-            return (((p_delta * 0.5) - delta_p) / p);
+            return fabs(((p_delta * 0.5) - delta_p) / p);
         };
         
         // First part of the transition
@@ -224,7 +212,7 @@ private:
 
         delta_p = current_motion.polynomial_p(t) - (p_delta * 0.5);
 
-        T p_prev = current_motion.polynomial_p(t);
+        T p_0 = current_motion.polynomial_p(t);
 
         update_motion (
             static_cast<int> (t * hz), 
@@ -237,6 +225,7 @@ private:
         // Second part of the transition
         ratio = get_ratio(v_target, v_exit);
         t *= ratio;
+
         current_motion.calc_constants_v(v_target, v_exit, t);
 
         validate_position(v_exit, p_delta * 0.5, t);
@@ -248,14 +237,16 @@ private:
             static_cast<int> (t * hz), 
             delta_unit, 
             v_target, 
-            p_prev,
+            p_0,
             false
         );
+
+        p_prev = ml::add(p_prev, ml::mul(delta_unit, p_0));
     }
 
     void motion (const T& v_enter, const T& v_target, const T& v_exit, 
                  const T& p_delta_carthesian, const T& p_acc, const T& p_dec, 
-                 const T& t_acc, const T& t_dec, const std::array<T, N>& delta_unit) {
+                 const T& t_acc, const T& t_dec, std::array<T, N>& delta_unit) {
         // Calculate the accelerating phase
         current_motion.calc_constants_v(v_enter, v_target, t_acc);
         //p_acc = current_motion.polynomial_p(t_acc);
@@ -273,7 +264,7 @@ private:
         T p_coast {t * v_target}; 
         delta_p = p_delta_carthesian - p_acc - p_dec - p_coast;
 
-        t = static_cast<T>(trunc(fabs((p_coast - delta_p) / v_target) * hz) * (dt));
+        t = static_cast<T>(trunc(fabs((p_coast - delta_p) / v_target) * hz * (dt)));
 
         update_motion (
             static_cast<int> (t * this->hz),
@@ -293,14 +284,17 @@ private:
             p_acc + p_coast,
             false
         );
+
+        p_prev = ml::add(p_prev, ml::mul(delta_unit, p_acc + p_coast + p_dec));
     }
 
-    void update_motion (int n, const std::array<T, N>& unit_vec, T velocity, T p_prev, bool is_coast) {
+    void update_motion (int n, const std::array<T, N>& unit_vec, T velocity, T p_0, bool is_coast) {
         current_motion.n = n;
         current_motion.dt = dt;
         current_motion.unit = unit_vec;
         current_motion.v_target = velocity;
         current_motion.is_coast = is_coast;
+        current_motion.p_0 = p_0;
         current_motion.p_prev = p_prev;
         
         this->append_motion(current_motion);
@@ -308,3 +302,5 @@ private:
         current_motion.reset();
     }
 };
+
+#endif

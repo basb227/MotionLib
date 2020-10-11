@@ -44,11 +44,11 @@ template <typename T, size_t N>
 struct Utils{
     virtual ~Utils() {}
     
-    T dot(std::array<T, N> a, std::array<T, N> b) {
+    T dot(std::array<T, N>& a, std::array<T, N>& b) {
         return ml::accum(ml::mul(a, b));
     }
 
-    T norm(std::array<T, N> a) { 
+    T norm(std::array<T, N>& a) { 
         return powl(ml::accum(ml::mul(a, a)), 0.5); 
     } 
 
@@ -79,7 +79,7 @@ struct Utils{
         return ml::mul(a, b);
     }
 
-    inline std::array<T, N> unit_vector(std::array<T, N> vec){
+    inline std::array<T, N> unit_vector(std::array<T, N>& vec){
         return ml::div(vec, norm(vec));
     }
 
@@ -87,9 +87,8 @@ struct Utils{
         return ((v_begin + (v - v_prev) * 0.5) * dt);
     }
 
-    T discrete(T t, int hz){
-        hz = static_cast<T> (hz);
-        return static_cast<T>(trunc(t * hz) * (1.0 / hz));
+    inline T discrete(T t){
+        return static_cast<T>(trunc(fabs(t)));
     }
 
     T sgn(T val) {
