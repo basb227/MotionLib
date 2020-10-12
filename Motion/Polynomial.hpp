@@ -47,18 +47,12 @@ struct Polynomial {
     Polynomial() : 
     c_3(1.), c_4(1.), c_5(1.), c_6(1.), v_0(0.), p_0(0.) {}
 
-    ~Polynomial(){}
+    virtual ~Polynomial(){}
 
+    
     inline void calc_constants(T v_f, T t){
         T v_v = v_f * 0.5;
 
-        c_3 = 2. * (32. * v_v - 11. * v_f) / (t * t * t);
-        c_4 = -3. * (64. * v_v - 27. * v_f) / (t * t * t * t);
-        c_5 = 3. * (64. * v_v - 30. * v_f) / (t * t * t * t * t);
-        c_6 = -32. * (2. * v_v - v_f) / (t * t * t * t * t * t);
-    }
-
-    inline void calc_constants(T v_v, T v_f, T t){
         c_3 = 2. * (32. * v_v - 11. * v_f) / (t * t * t);
         c_4 = -3. * (64. * v_v - 27. * v_f) / (t * t * t * t);
         c_5 = 3. * (64. * v_v - 30. * v_f) / (t * t * t * t * t);

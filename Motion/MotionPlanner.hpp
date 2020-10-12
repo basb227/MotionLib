@@ -71,7 +71,8 @@ private:
 
     void plan_motion(){
         // Calculate delta's of axis.
-        auto m = ml::min(this->mp_buffer[1].dim, this->mp_buffer[0].dim);
+        auto m = ml::min(this->mp_buffer[1].setpoint, 
+                         this->mp_buffer[0].setpoint);
         auto delta_unit {ml::unit_vector(m)};
         auto carthesian_delta {ml::norm(m)};
 
@@ -79,11 +80,13 @@ private:
         if (carthesian_delta == 0)
             return;
 
-        T ratio {ml::angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
+        T ratio {ml::angle_ratio(this->mp_buffer[0].setpoint, 
+                                 this->mp_buffer[1].setpoint, 
+                                 this->mp_buffer[2].setpoint)};
         
-        T v_exit {this->mp_buffer[1].vel * ratio};        // Velocity at end of trajectory (or final velocity).
-        T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
-        T a_target {this->mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
+        T v_exit {this->mp_buffer[1].velocity * ratio};                         // Velocity at end of trajectory (or final velocity).
+        T v_target {this->mp_buffer[1].velocity};              // Velocity which the planner will try to reach.
+        T a_target {this->mp_buffer[1].acceleration};              // Accelerataion which the planner will try to reach.
         
         T v_delta {v_exit - v_enter};               // Delta velocity of the enter and exit velocities.
         T v_delta_target {v_target - v_enter};      // Delta velocity for acceleration phase.
@@ -111,7 +114,8 @@ private:
 
     void plan_motion(T& v_final){
         // Calculate delta's of axis.
-        auto m = ml::min(this->mp_buffer[1].dim, this->mp_buffer[0].dim);
+        auto m = ml::min(this->mp_buffer[1].setpoint, 
+                         this->mp_buffer[0].setpoint);
         auto delta_unit {ml::unit_vector(m)};
         auto carthesian_delta {ml::norm(m)};
 
@@ -119,11 +123,13 @@ private:
         if (carthesian_delta == 0)
             return;
 
-        T ratio {ml::angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
+        T ratio {ml::angle_ratio(this->mp_buffer[0].setpoint, 
+                                 this->mp_buffer[1].setpoint, 
+                                 this->mp_buffer[2].setpoint)};
         
         T v_exit {v_final};                         // Velocity at end of trajectory (or final velocity).
-        T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
-        T a_target {this->mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
+        T v_target {this->mp_buffer[1].velocity};              // Velocity which the planner will try to reach.
+        T a_target {this->mp_buffer[1].acceleration};              // Accelerataion which the planner will try to reach.
         
         T v_delta {v_exit - v_enter};               // Delta velocity of the enter and exit velocities.
         T v_delta_target {v_target - v_enter};      // Delta velocity for acceleration phase.
@@ -170,21 +176,17 @@ private:
         return current_motion.polynomial_p(t);
     }
 
-    void validate_position (T& v_target, const T& position, const T& t) {
-        v_target *= (position / current_motion.polynomial_p(t));
-    }
-
     void transition (const T& p_delta, const T& v_enter, T v_target, const T& a_target, std::array<T, N>& delta_unit, T v_exit, T& t_acc){
         T t {0};
         T p {0};
         T ratio {0};
 
-        /*
-        auto validate_position = [&] () (T& v_target, const T& position, const T& t) {
+        
+        auto validate_position = [&] (T& v_target, const T& position, const T& t) {
             v_target *= (position / current_motion.polynomial_p(t));
-        }
-        */
-       
+        };
+        
+
         // First part of the transition
         current_motion.calc_constants_v(v_enter , v_target, t_acc);
         // Get position ratio
@@ -277,11 +279,11 @@ private:
     void update_motion (int n, const std::array<T, N>& unit_vec, T velocity, T p_0, bool is_coast) {
         current_motion.n = n;
         current_motion.dt = dt;
-        current_motion.unit = unit_vec;
+        current_motion.unit_vector = unit_vec;
         current_motion.v_target = velocity;
         current_motion.is_coast = is_coast;
         current_motion.p_0 = p_0;
-        current_motion.p_prev = this->mp_buffer[0].dim;
+        current_motion.prev_setpoint = this->mp_buffer[0].setpoint;
         
         this->append_motion(current_motion);
 

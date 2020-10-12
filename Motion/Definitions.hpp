@@ -42,36 +42,36 @@
  */
 template <typename T, size_t N>
 struct Point {
-    std::array<T, N> dim {};
+    std::array<T, N> setpoint {};
     std::array<T, N> p_prev {};
-    T vel, acc;
+    T velocity, acceleration;
     
     Point() : 
-        vel(0), 
-        acc(0) {}
+        velocity(0), 
+        acceleration(0) {}
 
-    Point(T f, T a) : 
-        vel(f), 
-        acc(a) {}
+    Point(T velocity, T acceleration) : 
+        velocity(velocity), 
+        acceleration(acceleration) {}
 
-    Point(std::array<T, N> dim) : 
-        dim(dim), 
-        vel(0), 
-        acc(0) {}
+    Point(std::array<T, N> setpoint) : 
+        setpoint(setpoint), 
+        velocity(0), 
+        acceleration(0) {}
     
-    Point(std::array<T, N> dim, T f, T a) : 
-        dim(dim), 
-        vel(f), 
-        acc(a) {}
+    Point(std::array<T, N> setpoint, T velocity, T acceleration) : 
+        setpoint(setpoint), 
+        velocity(velocity), 
+        acceleration(acceleration) {}
 
     std::array<T, N> operator- (Point<T, N>& p) {
-        return ml::min(this->dim, p.dim);
+        return ml::min(this->setpoint, p.setpoint);
     }
 
     Point<T, N>& operator= (Point<T, N> p) {
-        dim = p.dim;
-        vel = p.vel;
-        acc = p.acc;
+        setpoint = p.setpoint;
+        velocity = p.velocity;
+        acceleration = p.acceleration;
 
         return *this;
     }
@@ -83,8 +83,8 @@ struct Point {
  */
 template <typename T, size_t N>
 struct MotionObject : public Polynomial<T> {
-    std::array<T, N> unit {};
-    std::array<T, N> p_prev {};
+    std::array<T, N> unit_vector {};
+    std::array<T, N> prev_setpoint {};
     bool is_coast {false};
 
     T v_target {0.0};
@@ -100,29 +100,28 @@ struct MotionObject : public Polynomial<T> {
         v_target = 0.0;
         dt = 0.0;
         n = 0;
-        p_prev.fill(0.0);
         this->p_0 = 0;
     }
 
     T get_velocity(int _n, int i) {
         if (is_coast)
-            return (v_target * unit[i]);
-        return (this->polynomial_v(dt * _n) * unit[i]);
+            return (v_target * unit_vector[i]);
+        return (this->polynomial_v(dt * _n) * unit_vector[i]);
     }
 
     T get_position(int _n, int i) {
         if (is_coast) 
-            return ((this->p_0 + this->v_target * (dt * _n)) * unit[i]);          
-        return (this->polynomial_p(dt * _n) * unit[i]);
+            return ((this->p_0 + this->v_target * (dt * _n)) * unit_vector[i]);          
+        return (this->polynomial_p(dt * _n) * unit_vector[i]);
     }
 
     MotionObject<T, N>& operator= (MotionObject<T, N> m) {
         is_coast = m.is_coast;
-        unit = m.unit;
+        unit_vector = m.unit_vector;
         v_target = m.v_target;
         dt = m.dt;
         n = m.n;
-        p_prev = m.p_prev;
+        prev_setpoint = m.prev_setpoint;
 
         this->c_3 = m.c_3;
         this->c_4 = m.c_4;
