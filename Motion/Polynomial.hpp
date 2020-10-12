@@ -33,7 +33,6 @@
 
 #include <cmath>
 
-
 template <typename T>
 struct Polynomial {
     static constexpr T pol_p_c = 1.0 / 420.0;

@@ -8,23 +8,21 @@
 template <typename T, size_t N>
 class MotionBuffer {
 public:
-    std::array<T, N> p_init;
-
     MotionBuffer () {
-        Point<T, N> p(STANDARD_VELOCITY, STANDARD_ACCELERATION);
+        Point<T, N> p();
 
         append_buffer(p);
         append_buffer(p);
         append_buffer(p);
     }
 
-    MotionBuffer (std::array<T, N> p_init) :
-        p_init(p_init) {
+    MotionBuffer (std::array<T, N> p_init) {
             append_buffer(p_init);
             append_buffer(p_init);
             append_buffer(p_init);
     }
 
+protected:
     void append_buffer(const Point<T, N>& p){
         mp_buffer[0] = mp_buffer[1];
         mp_buffer[1] = mp_buffer[2]; 

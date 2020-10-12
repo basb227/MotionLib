@@ -32,9 +32,9 @@
 #define Definitions_hpp
 
 #include <utility>
-#include <iostream>
+
 #include "Polynomial.hpp"
-#include "Utils.hpp"
+#include "ArrayMath.hpp"
 
 
 /**
@@ -56,8 +56,8 @@ struct Point {
 
     Point(std::array<T, N> dim) : 
         dim(dim), 
-        vel(STANDARD_VELOCITY), 
-        acc(STANDARD_ACCELERATION) {}
+        vel(0), 
+        acc(0) {}
     
     Point(std::array<T, N> dim, T f, T a) : 
         dim(dim), 

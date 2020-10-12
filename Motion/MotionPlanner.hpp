@@ -35,7 +35,7 @@
 #include "MotionHandler.hpp"
 
 template <typename T, size_t N>
-class MotionPlanner : public MotionHandler<T, N>, public MotionBuffer<T, N>, public Utils<T, N> {
+class MotionPlanner : public MotionHandler<T, N>, public MotionBuffer<T, N> {
 public:
     int hz;
     T dt;
@@ -72,14 +72,14 @@ private:
     void plan_motion(){
         // Calculate delta's of axis.
         auto m = ml::min(this->mp_buffer[1].dim, this->mp_buffer[0].dim);
-        auto delta_unit {this->unit_vector(m)};
-        auto carthesian_delta {this->norm(m)};
+        auto delta_unit {ml::unit_vector(m)};
+        auto carthesian_delta {ml::norm(m)};
 
         // Check for second motion entry.
         if (carthesian_delta == 0)
             return;
 
-        T ratio {this->angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
+        T ratio {ml::angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
         
         T v_exit {this->mp_buffer[1].vel * ratio};        // Velocity at end of trajectory (or final velocity).
         T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
@@ -112,14 +112,14 @@ private:
     void plan_motion(T& v_final){
         // Calculate delta's of axis.
         auto m = ml::min(this->mp_buffer[1].dim, this->mp_buffer[0].dim);
-        auto delta_unit {this->unit_vector(m)};
-        auto carthesian_delta {this->norm(m)};
+        auto delta_unit {ml::unit_vector(m)};
+        auto carthesian_delta {ml::norm(m)};
 
         // Check for second motion entry.
         if (carthesian_delta == 0)
             return;
 
-        T ratio {this->angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
+        T ratio {ml::angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
         
         T v_exit {v_final};                         // Velocity at end of trajectory (or final velocity).
         T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
@@ -178,7 +178,13 @@ private:
         T t {0};
         T p {0};
         T ratio {0};
-        
+
+        /*
+        auto validate_position = [&] () (T& v_target, const T& position, const T& t) {
+            v_target *= (position / current_motion.polynomial_p(t));
+        }
+        */
+       
         // First part of the transition
         current_motion.calc_constants_v(v_enter , v_target, t_acc);
         // Get position ratio
