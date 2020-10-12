@@ -45,7 +45,7 @@ public:
         dt(1./hz) { }
 
     MotionPlanner(const int hz, std::array<T, N>& point) : 
-        MotionBuffer(p_init),
+        MotionBuffer<T, N>(point),
         hz(hz), 
         dt(1./hz) { }
 
@@ -71,7 +71,7 @@ private:
 
     void plan_motion(){
         // Calculate delta's of axis.
-        auto m = ml::min(mp_buffer[1].dim, mp_buffer[0].dim);
+        auto m = ml::min(this->mp_buffer[1].dim, this->mp_buffer[0].dim);
         auto delta_unit {this->unit_vector(m)};
         auto carthesian_delta {this->norm(m)};
 
@@ -79,11 +79,11 @@ private:
         if (carthesian_delta == 0)
             return;
 
-        T ratio {this->angle_ratio(mp_buffer[0].dim, mp_buffer[1].dim, mp_buffer[2].dim)};
+        T ratio {this->angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
         
-        T v_exit {mp_buffer[1].vel * ratio};        // Velocity at end of trajectory (or final velocity).
-        T v_target {mp_buffer[1].vel};              // Velocity which the planner will try to reach.
-        T a_target {mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
+        T v_exit {this->mp_buffer[1].vel * ratio};        // Velocity at end of trajectory (or final velocity).
+        T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
+        T a_target {this->mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
         
         T v_delta {v_exit - v_enter};               // Delta velocity of the enter and exit velocities.
         T v_delta_target {v_target - v_enter};      // Delta velocity for acceleration phase.
@@ -122,8 +122,8 @@ private:
         T ratio {this->angle_ratio(this->mp_buffer[0].dim, this->mp_buffer[1].dim, this->mp_buffer[2].dim)};
         
         T v_exit {v_final};                         // Velocity at end of trajectory (or final velocity).
-        T v_target {mp_buffer[1].vel};              // Velocity which the planner will try to reach.
-        T a_target {mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
+        T v_target {this->mp_buffer[1].vel};              // Velocity which the planner will try to reach.
+        T a_target {this->mp_buffer[1].acc};              // Accelerataion which the planner will try to reach.
         
         T v_delta {v_exit - v_enter};               // Delta velocity of the enter and exit velocities.
         T v_delta_target {v_target - v_enter};      // Delta velocity for acceleration phase.

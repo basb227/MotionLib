@@ -31,11 +31,6 @@ public:
         mp_buffer[2] = std::move(p);
     }
 
-    Point<T, N> buffer(int i) {
-        return mp_buffer[i];
-    }
-
-private:
     std::array<Point<T, N>, 3> mp_buffer;
 };
 

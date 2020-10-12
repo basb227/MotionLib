@@ -111,18 +111,8 @@ struct MotionObject : public Polynomial<T> {
     }
 
     T get_position(int _n, int i) {
-        if (is_coast) {
-            if (_n == 0) {
-                std::cout << "Position begin coast: ";
-                std::cout << (this->p_0 + this->v_target * (dt * _n)) * unit[i] << ", ";
-            }
-            if (_n == n) {
-                std::cout  << "\n" << "Position end coast: ";
-                std::cout << (this->p_0 + this->v_target * (dt * _n)) * unit[i] << ", ";
-            }
-            return ((this->p_0 + this->v_target * (dt * _n)) * unit[i]);
-        }
-            
+        if (is_coast) 
+            return ((this->p_0 + this->v_target * (dt * _n)) * unit[i]);          
         return (this->polynomial_p(dt * _n) * unit[i]);
     }
 
