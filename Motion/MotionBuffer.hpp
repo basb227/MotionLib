@@ -31,14 +31,12 @@ public:
         mp_buffer[2] = std::move(p);
     }
 
+    Point<T, N> buffer(int i) {
+        return mp_buffer[i];
+    }
+
 private:
     std::array<Point<T, N>, 3> mp_buffer;
-    bool is_well_defined = true;
-
-    void check_definition(){
-        is_well_defined =   mp_buffer[0] == mp_buffer[1] ? 
-                            mp_buffer[1] == mp_buffer[2] ? true : false;
-    }
 };
 
 #endif

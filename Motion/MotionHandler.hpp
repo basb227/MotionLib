@@ -44,7 +44,7 @@ public:
 
     void append_motion (MotionObject<T, N>& m) {
         motion_length += (m.n + 1);
-        motion_queue.push(m);
+        motion_queue.push(std::move(m));
     }
 
     int motion_queue_size () {

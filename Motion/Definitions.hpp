@@ -32,7 +32,7 @@
 #define Definitions_hpp
 
 #include <utility>
-
+#include <iostream>
 #include "Polynomial.hpp"
 #include "Utils.hpp"
 
@@ -100,6 +100,8 @@ struct MotionObject : public Polynomial<T> {
         v_target = 0.0;
         dt = 0.0;
         n = 0;
+        p_prev.fill(0.0);
+        this->p_0 = 0;
     }
 
     T get_velocity(int _n, int i) {
@@ -109,10 +111,22 @@ struct MotionObject : public Polynomial<T> {
     }
 
     T get_position(int _n, int i) {
+        if (is_coast) {
+            if (_n == 0) {
+                std::cout << "Position begin coast: ";
+                std::cout << (this->p_0 + this->v_target * (dt * _n)) * unit[i] << ", ";
+            }
+            if (_n == n) {
+                std::cout  << "\n" << "Position end coast: ";
+                std::cout << (this->p_0 + this->v_target * (dt * _n)) * unit[i] << ", ";
+            }
+            return ((this->p_0 + this->v_target * (dt * _n)) * unit[i]);
+        }
+            
         return (this->polynomial_p(dt * _n) * unit[i]);
     }
 
-    void operator= (MotionObject<T, N> m) {
+    MotionObject<T, N>& operator= (MotionObject<T, N> m) {
         is_coast = m.is_coast;
         unit = m.unit;
         v_target = m.v_target;
@@ -126,6 +140,8 @@ struct MotionObject : public Polynomial<T> {
         this->c_6 = m.c_6;
         this->v_0 = m.v_0;
         this->p_0 = m.p_0;
+
+        return *this;
     }
 };
 
