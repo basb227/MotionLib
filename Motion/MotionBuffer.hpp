@@ -8,15 +8,9 @@
 template <typename T, size_t N>
 class MotionBuffer {
 public:
-    MotionBuffer () {
-        Point<T, N> p();
+    MotionBuffer () { }
 
-        append_buffer(p);
-        append_buffer(p);
-        append_buffer(p);
-    }
-
-    MotionBuffer (std::array<T, N> p_init) {
+    MotionBuffer (std::array<T, N>& p_init) {
             append_buffer(p_init);
             append_buffer(p_init);
             append_buffer(p_init);

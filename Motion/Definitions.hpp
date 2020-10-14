@@ -44,7 +44,7 @@ template <typename T, size_t N>
 struct Point {
     std::array<T, N> setpoint {};
     std::array<T, N> p_prev {};
-    T velocity, acceleration;
+    T velocity {}, acceleration {};
     
     Point() : 
         velocity(0), 
@@ -101,6 +101,10 @@ struct MotionObject : public Polynomial<T> {
         dt = 0.0;
         n = 0;
         this->p_0 = 0;
+    }
+
+    T get_acceleration(int _n, int i) {
+        return (this->polynomial_a(dt * _n) * unit_vector[i]);
     }
 
     T get_velocity(int _n, int i) {

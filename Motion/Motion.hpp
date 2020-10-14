@@ -66,6 +66,20 @@ public:
         motion_pos++;
     }
 
+    virtual std::array<T, N> get_acceleration_setpoint() {
+        std::array<T, N> acceleration;
+
+        if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
+            current_motion = this->get_motion();
+            motion_pos = 0;
+        }  
+
+        for (size_t i = 0; i < N; i++)
+            acceleration[i] = current_motion.get_acceleration(motion_pos, i);
+
+        return acceleration;
+    }
+
     virtual std::array<T, N> get_velocity_setpoint() {
         std::array<T, N> velocities;
 
