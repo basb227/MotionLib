@@ -43,13 +43,14 @@ int main () {
 
     std::cout << "roll, pitch, yaw, x, y, z" << "\n";
 
-    for (int i = 0; i < 935; i++) {
+    bool motion_state = true;
+    while (motion_state) {
         // Get velocity setpoints of current time sample.
         auto result = motion.get_velocity_setpoint();
 
         // Increment motion.
-        motion.increment_motion_sample();
-
+        // Return false when all motion samples are returned.
+        motion_state = motion.increment_motion_sample();
 
         std::cout   << result[0] << ", " 
                     << result[1] << ", " 

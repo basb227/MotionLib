@@ -67,19 +67,25 @@ struct Polynomial {
 
         v_0 = v_s;
 
-        c_3 = 2. * (32. * (v_v - v_s) - 11. * (v_f - v_s)) / (t * t * t);
-        c_4 = -3. * (64. * (v_v - v_s) - 27. * (v_f - v_s)) / (t * t * t * t);
-        c_5 = 3. * (64. * (v_v - v_s) - 30. * (v_f - v_s)) / (t * t * t * t * t);
-        c_6 = -32. * (2. * (v_v - v_s) - (v_f - v_s)) / (t * t * t * t * t * t);
+        T v_d_0 = v_v - v_s;
+        T v_d_1 = v_f - v_s;
+
+        c_3 = 2. * (32. * v_d_0 - 11. * v_d_1) / (t * t * t);
+        c_4 = -3. * (64. * v_d_0 - 27. * v_d_1) / (t * t * t * t);
+        c_5 = 3. * (64. * v_d_0 - 30. * v_d_1) / (t * t * t * t * t);
+        c_6 = -32. * (2. * v_d_0 - v_d_1) / (t * t * t * t * t * t);
     }
 
     inline void calc_constants_v(T v_s, T v_v, T v_f, T t){
         v_0 = v_s;
 
-        c_3 = 2. * (32. * (v_v - v_s) - 11. * (v_f - v_s)) / (t * t * t);
-        c_4 = -3. * (64. * (v_v - v_s) - 27. * (v_f - v_s)) / (t * t * t * t);
-        c_5 = 3. * (64. * (v_v - v_s) - 30. * (v_f - v_s)) / (t * t * t * t * t);
-        c_6 = -32. * (2. * (v_v - v_s) - (v_f - v_s)) / (t * t * t * t * t * t);
+        T v_d_0 = v_v - v_s;
+        T v_d_1 = v_f - v_s;
+
+        c_3 = 2. * (32. * v_d_0 - 11. * v_d_1) / (t * t * t);
+        c_4 = -3. * (64. * v_d_0 - 27. * v_d_1) / (t * t * t * t);
+        c_5 = 3. * (64. * v_d_0 - 30. * v_d_1) / (t * t * t * t * t);
+        c_6 = -32. * (2. * v_d_0 - v_d_1) / (t * t * t * t * t * t);
     }
 
     inline T polynomial_p(T t){

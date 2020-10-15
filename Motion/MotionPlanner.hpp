@@ -77,7 +77,7 @@ private:
         auto carthesian_delta {ml::norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0)
+        if (carthesian_delta < 1e-9)
             return;
 
         T ratio {ml::angle_ratio(this->mp_buffer[0].setpoint, 
@@ -120,7 +120,7 @@ private:
         auto carthesian_delta {ml::norm(m)};
 
         // Check for second motion entry.
-        if (carthesian_delta == 0)
+        if (carthesian_delta  < 1e-9)
             return;
 
         T ratio {ml::angle_ratio(this->mp_buffer[0].setpoint, 
@@ -180,13 +180,11 @@ private:
         T t {0};
         T p {0};
         T ratio {0};
-
         
         auto validate_position = [&] (T& v_target, const T& position, const T& t) {
             v_target *= (position / current_motion.polynomial_p(t));
         };
         
-
         // First part of the transition
         current_motion.calc_constants_v(v_enter , v_target, t_acc);
         // Get position ratio

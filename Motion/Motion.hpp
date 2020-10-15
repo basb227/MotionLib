@@ -36,14 +36,18 @@
 template <typename T, size_t N>
 class Motion : public MotionPlanner<T, N> {
 public:
+    bool motion_in_progress;
+
     Motion() : MotionPlanner<T, N>(0) {}
 
     Motion(int hz) : 
-        MotionPlanner<T, N>(hz) {}
+        MotionPlanner<T, N>(hz),
+        motion_in_progress(false) {}
 
     Motion(int hz, std::array<T, N> p) : 
         MotionPlanner<T, N>(hz, p),
-        p_init(p) { }   
+        p_init(p),
+        motion_in_progress(false) { } 
 
     virtual ~Motion() {}
 
@@ -62,17 +66,24 @@ public:
         this->plan(p, v_final);
     }
 
-    virtual inline void increment_motion_sample() {
+    virtual inline bool increment_motion_sample() {
         motion_pos++;
+        return motion_in_progress;
     }
 
     virtual std::array<T, N> get_acceleration_setpoint() {
         std::array<T, N> acceleration;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
+            motion_in_progress = true;
             current_motion = this->get_motion();
             motion_pos = 0;
         }  
+
+        else if ((this->motion_queue_size() == 0) && (motion_pos >= current_motion.n)){
+            motion_in_progress = false;
+            motion_pos = current_motion.n + 1;
+        }
 
         for (size_t i = 0; i < N; i++)
             acceleration[i] = current_motion.get_acceleration(motion_pos, i);
@@ -84,9 +95,15 @@ public:
         std::array<T, N> velocities;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
+            motion_in_progress = true;
             current_motion = this->get_motion();
             motion_pos = 0;
         }  
+
+        else if ((this->motion_queue_size() == 0) && (motion_pos >= current_motion.n)){
+            motion_in_progress = false;
+            motion_pos = current_motion.n + 1;
+        }
 
         for (size_t i = 0; i < N; i++)
             velocities[i] = current_motion.get_velocity(motion_pos, i);
@@ -97,10 +114,17 @@ public:
     virtual std::array<T, N> get_position_setpoint() {
         std::array<T, N> positions;
 
+        // When motions are queued and the current motion exceeds amount of samples, get a new motion.
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {
+            motion_in_progress = true;
             current_motion = this->get_motion();
             motion_pos = 0;
         }  
+        // When the queue is empty and motion is finished, no more actions are nescecary.
+        else if ((this->motion_queue_size() == 0) && (motion_pos >= current_motion.n)){
+            motion_in_progress = false;
+            motion_pos = current_motion.n + 1;
+        }
 
         for (size_t i = 0; i < N; i++)
             positions[i] = current_motion.get_position(motion_pos, i) + current_motion.prev_setpoint[i];

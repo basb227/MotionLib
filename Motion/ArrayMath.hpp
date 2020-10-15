@@ -47,10 +47,6 @@ namespace ml {
      * @param OP    Type of the arithmatic function pointer (e.g. std::plus, std::minus etc.)
      * @param A     Type of the results which should be an enumeration.
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param a     Result of the arithmatic operation.
-     * @param t     Enumeration for the operation.
      */
     template<template < class > class OP, typename A, typename T>
     std::enable_if_t<is_stl_container<T>::value, void> math (A& a, T&& t) {
@@ -67,10 +63,6 @@ namespace ml {
      * Template arguments:
      * @param A     Type of the results which should be an enumeration.
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param a     Result of the arithmatic operation.
-     * @param t     Enumeration or scalar for the operation.
      */
     template<typename A, typename ... Args>
     A add (A& a, Args&& ... args) {
@@ -90,10 +82,6 @@ namespace ml {
      * Template arguments:
      * @param A     Type of the results which should be an enumeration.
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param a     Result of the arithmatic operation.
-     * @param t     Enumeration or scalar for the operation.
      */
     template<typename A, typename ... Args>
     A min (A& a, Args&& ... args) {
@@ -113,10 +101,6 @@ namespace ml {
      * Template arguments:
      * @param A     Type of the results which should be an enumeration.
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param a     Result of the arithmatic operation.
-     * @param t     Enumeration or scalar for the operation.
      */
     template<typename A, typename ... Args>
     A mul (A& a, Args&& ... args) {
@@ -136,10 +120,6 @@ namespace ml {
      * Template arguments:
      * @param A     Type of the results which should be an enumeration.
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param a     Result of the arithmatic operation.
-     * @param t     Enumeration or scalar for the operation.
      */
     template<typename A, typename ... Args>
     A div (A& a, Args&& ... args) {
@@ -158,35 +138,64 @@ namespace ml {
      * 
      * Template arguments:
      * @param T     Type of the enumeration.
-     * 
-     * Function arguments:
-     * @param t     Enumeration for the operation.
      */
+    template<typename T, size_t N>
+    //typename std::remove_reference<T &&>::type::value_type 
+    inline T accum (std::array<T, N>&& t) {
+        T result = 0;
+
+        for (const auto& i : t) {
+            result += i;
+        }
+
+        return result;
+    }
+
     template<typename T>
-    typename std::remove_reference<T &&>::type::value_type 
-    accum (T&& t) {
-        return std::accumulate(t.begin(), t.end(), 0);
+    inline T fpow(T a, T b) {
+        // calculate approximation with fraction of the exponent
+        int e = (int) b;
+        union {
+            double d;
+            int x[2];
+        } u = { a };
+
+        u.x[1] = (int)((b - e) * (u.x[1] - 1072632447) + 1072632447);
+        u.x[0] = 0;
+
+        // exponentiation by squaring with the exponent's integer part
+        // double r = u.d makes everything much slower, not sure why
+        double r {1.0};
+        while (e) {
+            if (e & 1) 
+                r *= a;
+
+            a *= a;
+            e >>= 1;
+        }
+
+        return r * u.d;
     }
 
     /* Utiliary functions regarding array arithmatics */
     template<typename T, size_t N>
-    T dot(std::array<T, N>& a, std::array<T, N>& b) {
+    inline T dot(std::array<T, N>& a, std::array<T, N>& b) {
         return ml::accum(ml::mul(a, b));
     }
 
     template<typename T, size_t N>
-    T norm(std::array<T, N>& a) { 
-        return powl(ml::accum(ml::mul(a, a)), 0.5); 
+    inline T norm(std::array<T, N>& a) { 
+        return ml::fpow(ml::accum(ml::mul(a, a)), 0.5); 
     } 
 
     template<typename T, size_t N>
-    T angle_ratio(std::array<T, N>& a, std::array<T, N>& b, std::array<T, N>& c) {
+    inline T angle_ratio(std::array<T, N>& a, std::array<T, N>& b, std::array<T, N>& c) {
         // Calculate the delta's between b-a and b-c
         std::array<T, N> ab {ml::min(a, b)};
         std::array<T, N> cb {ml::min(c, b)};
 
         T ratio = std::fabs(dot(ab, cb) / (norm(ab) * norm(cb)));
-        ratio = powf(ratio, 5.0) / pi_d; // CORNER_VELOCITY_RATIO
+        ratio = ml::fpow(ratio, 5.0) / pi_d; // CORNER_VELOCITY_RATIO
 
         // Smallest corner ratio allowed.
         if (ratio < 0.01){ // CORNER_MAX_RATIO
