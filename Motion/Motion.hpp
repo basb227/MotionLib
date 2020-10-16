@@ -51,26 +51,59 @@ public:
 
     virtual ~Motion() {}
 
+    /**
+     * Plan a motion.
+     * 
+     * @param pos   Position setpoint.
+     */
     inline void plan_motion(std::array<T, N> pos) {
         Point<T, N> p(pos);
         this->plan(p);
     }
 
+    /**
+     * Plan a motion with specified velocity and acceleration constraints.
+     * 
+     * @param pos   Position setpoint.
+     * @param vel   Velocity constraint.
+     * @param acc   Acceleration constraint.
+     */
     inline void plan_motion(std::array<T, N> pos, T vel, T acc) {
         Point<T, N> p(pos, vel, acc);
         this->plan(p);
     }
 
+    /**
+     * Plan a motion with specified velocity and acceleration constraints, and final velocity.
+     * 
+     * @param pos       Position setpoint.
+     * @param vel       Velocity constraint.
+     * @param acc       Acceleration constraint.
+     * @param v_final   Final velocity.
+     */
     inline void plan_motion(std::array<T, N> pos, T vel, T acc, T v_final) {
         Point<T, N> p(pos, vel, acc);
         this->plan(p, v_final);
     }
 
+    /**
+     * Increment the motion with this function. 
+     * This way a monotonic return of the motion 
+     * is secured and can only be performed by 
+     * the user of this library.
+     * 
+     * @return A boolean to indicate if a motion is still in progress or not.
+     */
     virtual inline bool increment_motion_sample() {
         motion_pos++;
         return motion_in_progress;
     }
 
+    /**
+     * Get the accelerations of all dimensions.
+     * 
+     * @return std::array<T, N> of accelerations.
+     */
     virtual std::array<T, N> get_acceleration_setpoint() {
         std::array<T, N> acceleration;
 
@@ -91,6 +124,11 @@ public:
         return acceleration;
     }
 
+    /**
+     * Get the velocity of all dimensions.
+     * 
+     * @return std::array<T, N> of velocity.
+     */
     virtual std::array<T, N> get_velocity_setpoint() {
         std::array<T, N> velocities;
 
@@ -111,6 +149,11 @@ public:
         return velocities;
     }
 
+    /**
+     * Get the position of all dimensions.
+     * 
+     * @return std::array<T, N> of position.
+     */
     virtual std::array<T, N> get_position_setpoint() {
         std::array<T, N> positions;
 

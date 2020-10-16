@@ -49,7 +49,12 @@ struct Polynomial {
 
     virtual ~Polynomial(){}
 
-    
+    /**
+     * Formula to calculate the poylnomial constants.
+     * 
+     * @param v_f   Final velocity of the polynomial
+     * @param t     Time the polynomial should take for reaching final value.
+     */
     inline void calc_constants(T v_f, T t){
         T v_v = v_f * 0.5;
 
@@ -59,6 +64,13 @@ struct Polynomial {
         c_6 = -32. * (2. * v_v - v_f) / (t * t * t * t * t * t);
     }
 
+    /**
+     * Formula to calculate the poylnomial constants.
+     * 
+     * @param v_s   Starting velocity of the polynomial.
+     * @param v_f   Final velocity of the polynomial
+     * @param t     Time the polynomial should take for reaching final value.
+     */
     inline void calc_constants_v(T v_s, T v_f, T t){
         T v_h = v_f > v_s ? v_f : v_s;
         T v_l = v_f < v_s ? v_f : v_s;
@@ -76,6 +88,14 @@ struct Polynomial {
         c_6 = -32. * (2. * v_d_0 - v_d_1) / (t * t * t * t * t * t);
     }
 
+    /**
+     * Formula to calculate the poylnomial constants.
+     * 
+     * @param v_s   Starting velocity of the polynomial.
+     * @param v_v   Velocity of the polynomial at t / 2.
+     * @param v_f   Final velocity of the polynomial
+     * @param t     Time the polynomial should take for reaching final value.
+     */
     inline void calc_constants_v(T v_s, T v_v, T v_f, T t){
         v_0 = v_s;
 
@@ -88,6 +108,11 @@ struct Polynomial {
         c_6 = -32. * (2. * v_d_0 - v_d_1) / (t * t * t * t * t * t);
     }
 
+    /**
+     * Return 7th order polynomial function which in this context is position.
+     * 
+     * @param t     Time at which the position should be calculated.
+     */
     inline T polynomial_p(T t){
         return  pol_p_c * t * (105 * c_3 * (t * t * t) + 
                 2 * (42 * c_4 * (t * t * t * t) + 
@@ -95,10 +120,20 @@ struct Polynomial {
                 7 * c_5 * (t * t * t* t * t)))) + p_0;
     } 
 
+    /**
+     * Return 6th order polynomial function which in this context is velocity.
+     * 
+     * @param t     Time at which the velocity should be calculated.
+     */
     inline T polynomial_v(T t){
         return (t * t * t) * (t * (t * (c_6 * t + c_5) + c_4) + c_3) + v_0;
     } 
 
+    /**
+     * Return 5th order polynomial function which in this context is acceleration.
+     * 
+     * @param t     Time at which the acceleration should be calculated.
+     */
     inline T polynomial_a(T t){
         return (t * t) * (t * (6. * c_6 * (t * t) + 5. * c_5 * t + 4 * c_4) + 3. * c_3);
     }

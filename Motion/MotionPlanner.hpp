@@ -31,11 +31,11 @@
 #ifndef MotionPlanner_hpp
 #define MotionPlanner_hpp
 
-#include "MotionBuffer.hpp"
+#include "SetpointBuffer.hpp"
 #include "MotionHandler.hpp"
 
 template <typename T, size_t N>
-class MotionPlanner : public MotionHandler<T, N>, public MotionBuffer<T, N> {
+class MotionPlanner : public MotionHandler<T, N>, public SetpointBuffer<T, N> {
 public:
     int hz;
     T dt;
@@ -45,7 +45,7 @@ public:
         dt(1./hz) { }
 
     MotionPlanner(const int hz, std::array<T, N>& point) : 
-        MotionBuffer<T, N>(point),
+        SetpointBuffer<T, N>(point),
         hz(hz), 
         dt(1./hz) { }
 
