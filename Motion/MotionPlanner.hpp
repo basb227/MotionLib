@@ -237,7 +237,7 @@ private:
 
     void motion (const T& v_enter, const T& v_target, const T& v_exit, 
                  const T& p_delta_carthesian, const T& p_acc, const T& p_dec, 
-                 const T& t_acc, const T& t_dec, std::array<T, N>& delta_unit) {
+                 const T& t_acc, const T& t_dec, const std::array<T, N>& delta_unit) {
         // Calculate the accelerating phase
         current_motion.calc_constants_v(v_enter, v_target, t_acc);
 
@@ -250,6 +250,7 @@ private:
         );
 
         // Calculate the coasting phase
+        // This formula is to make sure that timing requirements are met
         T t {static_cast<T>(trunc(fabs((p_delta_carthesian - p_dec - p_acc - error) / v_target) * hz) * (dt))};
         T p_coast {t * v_target}; 
         error = p_delta_carthesian - p_acc - p_dec - p_coast;

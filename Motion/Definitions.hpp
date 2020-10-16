@@ -115,8 +115,8 @@ struct MotionObject : public Polynomial<T> {
 
     T get_position(int _n, int i) {
         if (is_coast) 
-            return ((this->p_0 + this->v_target * (dt * _n)) * unit_vector[i]);          
-        return (this->polynomial_p(dt * _n) * unit_vector[i]);
+            return ((this->p_0 + this->v_target * (dt * _n)) * unit_vector[i]) + prev_setpoint[i];         
+        return (this->polynomial_p(dt * _n) * unit_vector[i]) + prev_setpoint[i];
     }
 
     MotionObject<T, N>& operator= (MotionObject<T, N> m) {
