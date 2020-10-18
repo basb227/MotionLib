@@ -176,7 +176,7 @@ private:
         return current_motion.polynomial_p(t);
     }
 
-    void transition (const T& p_delta, const T& v_enter, T v_target, const T& a_target, std::array<T, N>& delta_unit, T v_exit, T& t_acc){
+    inline void transition (const T& p_delta, const T& v_enter, T v_target, const T& a_target, std::array<T, N>& delta_unit, T v_exit, T& t_acc){
         T t {0};
         T p {0};
         T ratio {0};
@@ -235,7 +235,7 @@ private:
         );
     }
 
-    void motion (const T& v_enter, const T& v_target, const T& v_exit, 
+    inline void motion (const T& v_enter, const T& v_target, const T& v_exit, 
                  const T& p_delta_carthesian, const T& p_acc, const T& p_dec, 
                  const T& t_acc, const T& t_dec, const std::array<T, N>& delta_unit) {
         // Calculate the accelerating phase

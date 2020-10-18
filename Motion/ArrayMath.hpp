@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <functional>
 
 #define pi_d 1/3.14159265359
 
