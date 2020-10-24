@@ -129,7 +129,7 @@ public:
      * 
      * @return std::array<T, N> of velocity.
      */
-    virtual std::array<T, N> get_velocity_setpoint() {
+    inline virtual std::array<T, N> get_velocity_setpoint() {
         std::array<T, N> velocities;
 
         if ((this->motion_queue_size() > 0) && (motion_pos >= current_motion.n)) {

@@ -97,7 +97,7 @@ private:
         T p_acc {this->calc_accel_position (v_enter, v_target, t_acc)};
 
         T t_dec {this->calc_accel_time (v_delta_exit, a_target)};
-        T p_dec {abs(this->calc_accel_position (v_target, v_exit, t_dec))};
+        T p_dec {fabs(this->calc_accel_position (v_target, v_exit, t_dec))};
 
         // Determine if the first and second acceleration event in the motion is bigger than the total distance.
         // If its true, coasting motion is calculated, if false, transition motion id calculated.
@@ -136,17 +136,17 @@ private:
         T v_delta_exit {v_exit - v_target};         // Delta velocity for deceleration phase.
         
         // Calculate the time and distance required to reach target velocities.
-        T t_acc {this->calc_accel_time (v_delta_target, a_target)};
-        T p_acc {this->calc_accel_position (v_enter, v_target, t_acc)};
+        T t_acc {this->calc_accel_time(v_delta_target, a_target)};
+        T p_acc {this->calc_accel_position(v_enter, v_target, t_acc)};
 
-        T t_dec {this->calc_accel_time (v_delta_exit, a_target)};
-        T p_dec {abs(this->calc_accel_position (v_target, v_exit, t_dec))};
+        T t_dec {this->calc_accel_time(v_delta_exit, a_target)};
+        T p_dec {fabs(this->calc_accel_position(v_target, v_exit, t_dec))};
 
         // Determine if the first and second acceleration event in the motion is bigger than the total distance.
         // If its true, coasting motion is calculated, if false, transition motion id calculated.
         if ((carthesian_delta < 1) or ((p_acc + p_dec) > carthesian_delta))
             // Transition motion calculates two motions and "transitions" to a velocity/position.
-            transition(carthesian_delta, v_enter, v_target, a_target, delta_unit, v_exit, t_acc);
+            transition(carthesian_delta, v_enter, v_target, a_target, delta_unit, v_exit, p_acc, p_dec);
         
         else 
             // Motion will calculate three motions from v_enter, to v_target, to v_exit.
@@ -176,7 +176,39 @@ private:
         return current_motion.polynomial_p(t);
     }
 
-    inline void transition (const T& p_delta, const T& v_enter, T v_target, const T& a_target, std::array<T, N>& delta_unit, T v_exit, T& t_acc){
+    inline void transition (const T& p_delta, const T& v_enter, T& v_target, const T& a_target, std::array<T, N>& delta_unit, T& v_exit, T& p_acc, T& p_dec){
+        T t {1};
+        T p_target_ratio {p_acc / (p_acc + p_dec)};
+
+        // First calculate the ratio between position
+        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
+        T p {current_motion.polynomial_p(t)};
+        T ratio {p_delta / p};
+
+        t *= ratio;
+
+        // Now calculate the ratio between acceleration.
+        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
+        T a {current_motion.polynomial_a(t * p_target_ratio * 0.5)};
+        ratio = ml::fpow((a_target / a), 0.5);
+
+        t /= ratio;
+        v_target *= ratio;
+        v_exit *= ratio;
+
+        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
+        p = current_motion.polynomial_p(t);
+        a = current_motion.polynomial_a(t * p_target_ratio * 0.5);
+
+        update_motion (
+            static_cast<int> (t * hz), 
+            delta_unit, 
+            v_target, 
+            {},
+            false
+        );
+        
+        /*
         T t {0};
         T p {0};
         T ratio {0};
@@ -233,6 +265,7 @@ private:
             p_0,
             false
         );
+        */
     }
 
     inline void motion (const T& v_enter, const T& v_target, const T& v_exit, 

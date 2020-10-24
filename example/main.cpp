@@ -7,7 +7,7 @@ int main() {
 	// Class Motion takes two template arguments: first is type (float, double, int etc.), 
 	// second is number of dimensions.
 	// The object takes one argument: hz, which is the amount of samples created per second (or resolution).
-	Motion<double, 6> motion(10000);
+	Motion<double, 6> motion(1000);
 
 	// set_position takes array which represents desired position.
 	// Positions are always absolute.
@@ -18,8 +18,8 @@ int main() {
 
 
 	// Plan the motion. The paramters are velocity acceleration and final velocity respectively.
-	motion.plan_motion(p, 500, 2000, 0);
-	motion.plan_motion(p, 500, 2000, 0);
+	motion.plan_motion(p, 500, 1000, 250);
+	motion.plan_motion(p, 500, 1000, 250);
 
 	std::cout << "roll, pitch, yaw, x, y, z" << "\n";
 
@@ -38,7 +38,6 @@ int main() {
 			<< result[3] << ", "
 			<< result[4] << ", "
 			<< result[5] << "\n";
-
 	}
 
 	return 0;

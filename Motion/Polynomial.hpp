@@ -108,8 +108,36 @@ struct Polynomial {
         c_6 = -32. * (2. * v_d_0 - v_d_1) / (t * t * t * t * t * t);
     }
 
+    inline void calc_constants_v(T v_s, T v_v, T v_f, T t_v, T t_f) {
+        v_0 = v_s;
+
+        T t_c = 1 / ((t_f - t_v) * (t_f - t_v) * (t_f - t_v));
+
+        T t_f_3 = t_f * t_f * t_f;
+        T t_v_3 = t_v * t_v * t_v;
+
+        T v_vs_d = v_v - v_s;
+        T v_fs_d = v_f - v_s;
+
+        c_3 = t_c * 
+        ((v_vs_d * t_f_3) / (t_v_3) - 
+        (v_fs_d * (15 * t_f * t_f * t_v - 24 * t_f * t_v * t_v + 10 * t_v_3)) / t_f_3);
+
+        c_4 = t_c * 3 * 
+        (-1 * (v_vs_d * t_f * t_f) / t_v_3 + 
+        (v_fs_d * (5 * t_f_3 - 9 * t_f * t_v * t_v + 5 * t_v_3)) / (t_f_3 * t_f));
+
+        c_5 = t_c * 3 * 
+        ((v_vs_d * t_f) / t_v_3 - 
+        (v_fs_d * (8 * t_f_3 - 9 * t_f * t_f * t_v + 2 * t_v_3)) / (t_f_3 * t_f * t_f));
+
+        c_6 = t_c * 
+        (-1 * (v_vs_d / t_v_3) + 
+        (v_fs_d * (10 * t_f * t_f - 15 * t_f * t_v + 6 * t_v * t_v)) / (t_f_3 * t_f * t_f));
+    }
+
     /**
-     * Return 7th order polynomial function which in this context is position.
+     * Return 7th order polynomial function.
      * 
      * @param t     Time at which the position should be calculated.
      */
@@ -121,7 +149,7 @@ struct Polynomial {
     } 
 
     /**
-     * Return 6th order polynomial function which in this context is velocity.
+     * Return 6th order polynomial function.
      * 
      * @param t     Time at which the velocity should be calculated.
      */
@@ -130,7 +158,7 @@ struct Polynomial {
     } 
 
     /**
-     * Return 5th order polynomial function which in this context is acceleration.
+     * Return 5th order polynomial function.
      * 
      * @param t     Time at which the acceleration should be calculated.
      */
