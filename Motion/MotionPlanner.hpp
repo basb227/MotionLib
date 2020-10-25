@@ -51,13 +51,13 @@ public:
 
     virtual ~MotionPlanner(){};
 
-    void plan(const Point<T, N>& p){
+    void append_and_plan(const Point<T, N>& p){
         // First append required to fill buffer.
         this->append_buffer(p);
         plan_motion();
     }
 
-    void plan(const Point<T, N>& p, T& v_final){
+    void append_and_plan(const Point<T, N>& p, T& v_final){
         // First append required to fill buffer.
         this->append_buffer(p);
         plan_motion(v_final);

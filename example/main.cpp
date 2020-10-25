@@ -18,8 +18,8 @@ int main() {
 
 
 	// Plan the motion. The paramters are velocity acceleration and final velocity respectively.
-	motion.plan_motion(p, 500, 1000, 250);
-	motion.plan_motion(p, 500, 1000, 250);
+	motion.plan({ 1, 2, 3, 4, 5, 6 }, 500, 1000, 250);
+	motion.plan({ 1, 2, 3, 4, 5, 6 }, 500, 1000, 250);
 
 	std::cout << "roll, pitch, yaw, x, y, z" << "\n";
 

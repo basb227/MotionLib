@@ -56,9 +56,9 @@ public:
      * 
      * @param pos   Position setpoint.
      */
-    inline void plan_motion(std::array<T, N> pos) {
+    inline void plan(std::array<T, N> pos) {
         Point<T, N> p(pos);
-        this->plan(p);
+        this->append_and_plan(p);
     }
 
     /**
@@ -68,9 +68,9 @@ public:
      * @param vel   Velocity constraint.
      * @param acc   Acceleration constraint.
      */
-    inline void plan_motion(std::array<T, N> pos, T vel, T acc) {
+    inline void plan(std::array<T, N> pos, T vel, T acc) {
         Point<T, N> p(pos, vel, acc);
-        this->plan(p);
+        this->append_and_plan(p);
     }
 
     /**
@@ -81,9 +81,9 @@ public:
      * @param acc       Acceleration constraint.
      * @param v_final   Final velocity.
      */
-    inline void plan_motion(std::array<T, N> pos, T vel, T acc, T v_final) {
+    inline void plan(std::array<T, N> pos, T vel, T acc, T v_final) {
         Point<T, N> p(pos, vel, acc);
-        this->plan(p, v_final);
+        this->append_and_plan(p, v_final);
     }
 
     /**
