@@ -103,7 +103,7 @@ private:
         // If its true, coasting motion is calculated, if false, transition motion id calculated.
         if ((carthesian_delta < 1) or ((p_acc + p_dec) > carthesian_delta))
             // Transition motion calculates two motions and "transitions" to a velocity/position.
-            transition(carthesian_delta, v_enter, v_target, a_target, delta_unit, v_exit, t_acc);
+            transition(carthesian_delta, v_enter, v_target, a_target, delta_unit, v_exit, p_acc, p_dec);
         
         else 
             // Motion will calculate three motions from v_enter, to v_target, to v_exit.
