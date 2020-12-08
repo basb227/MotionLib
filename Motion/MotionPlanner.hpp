@@ -176,66 +176,45 @@ private:
         return current_motion.polynomial_p(t);
     }
 
-    inline void transition (const T& p_delta, const T& v_enter, T& v_target, const T& a_target, std::array<T, N>& delta_unit, T& v_exit, T& p_acc, T& p_dec){
+    inline void transition (const T& carthesian_delta, const T& v_enter, T& v_target, const T& a_target, std::array<T, N>& delta_unit, T& v_exit, T& p_acc, T& p_dec){
         T t {1};
         T p_target_ratio {p_acc / (p_acc + p_dec)};
-
+        
         // First calculate the ratio between position
-        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
-        T p {current_motion.polynomial_p(t)};
-        T ratio {p_delta / p};
 
-        t *= ratio;
+        if ((v_exit / v_target) < 0.05) {
+            current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
+            T ratio {carthesian_delta / current_motion.polynomial_p(t)};
 
-        // Now calculate the ratio between acceleration.
-        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
-        T a {current_motion.polynomial_a(t * p_target_ratio * 0.5)};
-        ratio = ml::fpow((a_target / a), 0.5);
+            t *= ratio;
 
-        t /= ratio;
-        v_target *= ratio;
-        v_exit *= ratio;
+            // Now calculate the ratio between acceleration.
+            current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
+            T a {current_motion.polynomial_a(t * p_target_ratio * 0.5)};
+            ratio = ml::fpow((a_target / a), 0.5);
 
-        current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
-        p = current_motion.polynomial_p(t);
-        a = current_motion.polynomial_a(t * p_target_ratio * 0.5);
+            t /= ratio;
+            v_target *= ratio;
+            v_exit *= ratio;
 
-        update_motion (
-            static_cast<int> (t * hz), 
-            delta_unit, 
-            v_target, 
-            {},
-            false
-        );
-        
-        /*
-        T t {0};
-        T p {0};
-        T ratio {0};
-        
-        auto validate_position = [&] (T& v_target, const T& position, const T& t) {
-            v_target *= (position / current_motion.polynomial_p(t));
-        };
-        
-        // First part of the transition
-        current_motion.calc_constants_v(v_enter , v_target, t_acc);
-        // Get position ratio
-        ratio = fabs(((p_delta * 0.5) - error) / current_motion.polynomial_p(t_acc));
+            current_motion.calc_constants_v(v_enter, v_target, v_exit, t * p_target_ratio, t);
 
-        // Correct time and velocity based on this ratio
-        v_target *= ratio;
-        t = t_acc * ratio;
+            error = current_motion.polynomial_p(t) - carthesian_delta;
 
-        // Calculate new constants
-        current_motion.calc_constants_v(v_enter, v_target, t);
-        validate_position(v_target, p_delta * 0.5, t);
-        current_motion.calc_constants_v(v_enter, v_target, t);
+        } 
+        else {
+            t = calc_accel_time((v_enter - v_exit), a_target);
+            current_motion.calc_constants_v(v_enter, v_exit, t);
+            t *= fabs((carthesian_delta - error) / current_motion.polynomial_p(t));
 
-        // Calculate the error.
-        error = current_motion.polynomial_p(t) - (p_delta * 0.5);
+            current_motion.calc_constants_v(v_enter, v_exit, t);
 
-        // p_0 as reference for next part of the motion.
-        T p_0 = current_motion.polynomial_p(t);
+            v_exit *= (carthesian_delta / current_motion.polynomial_p(t));
+
+            current_motion.calc_constants_v(v_enter, v_exit, t);
+
+            error = current_motion.polynomial_p(t) - carthesian_delta;
+        }
 
         update_motion (
             static_cast<int> (t * hz), 
@@ -244,28 +223,6 @@ private:
             {},
             false
         );
-
-        // Second part of the transition
-        t = calc_accel_time((v_target - v_exit), a_target);
-        current_motion.calc_constants_v(v_exit, v_target, t);
-        ratio = fabs(((p_delta * 0.5) - error) / current_motion.polynomial_p(t));
-        t *= ratio;
-
-        current_motion.calc_constants_v(v_target, v_exit, t);
-
-        validate_position(v_exit, p_delta * 0.5, t);
-        current_motion.calc_constants_v(v_target, v_exit, t);
-
-        error = current_motion.polynomial_p(t) - (p_delta * 0.5);
-
-        update_motion (
-            static_cast<int> (t * hz), 
-            delta_unit, 
-            v_target, 
-            p_0,
-            false
-        );
-        */
     }
 
     inline void motion (const T& v_enter, const T& v_target, const T& v_exit, 

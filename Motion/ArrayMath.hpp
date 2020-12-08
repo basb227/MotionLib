@@ -196,7 +196,7 @@ namespace ml {
         std::array<T, N> cb {ml::min(c, b)};
 
         T ratio = std::fabs(dot(ab, cb) / (norm(ab) * norm(cb)));
-        ratio = ml::fpow(ratio, 5.0) / pi_d; // CORNER_VELOCITY_RATIO
+        ratio = ml::fpow(ratio, 3.0) / pi_d; // CORNER_VELOCITY_RATIO
 
         // Smallest corner ratio allowed.
         if (ratio < 0.01){ // CORNER_MAX_RATIO
